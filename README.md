@@ -219,3 +219,21 @@ cd apps/api
 source venv/bin/activate
 uvicorn app.main:app --reload
 ```
+
+## 数据库初始化
+
+如果启动后端时报错 `database "xhs_ops_agent" does not exist`，说明 PostgreSQL 数据库没有自动创建。执行：
+
+```bash
+# 方式 1：使用辅助脚本（推荐）
+bash apps/api/scripts/setup-db.sh
+
+# 方式 2：手动创建
+docker exec -it xhs-postgres createdb -U postgres xhs_ops_agent
+
+# 方式 3：删除旧卷重新初始化（会清空数据）
+docker-compose down -v
+docker-compose up -d
+```
+
+对于新部署，`docker-compose.yml` 中已经挂载了 `docker/postgres/init.sql`，会在 PostgreSQL 首次初始化时自动创建数据库。
