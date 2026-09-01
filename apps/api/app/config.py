@@ -10,8 +10,15 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 60
     refresh_token_expire_days: int = 7
 
+    # LLM 配置
+    llm_provider: str = "mock"
+    llm_api_key: str = ""
+    llm_base_url: str = ""
+    llm_model: str = ""
+
     class Config:
         env_file = ".env"
+        extra = "ignore"  # 忽略未定义的环境变量，避免 .env 中其他配置导致报错
 
 
 settings = Settings()

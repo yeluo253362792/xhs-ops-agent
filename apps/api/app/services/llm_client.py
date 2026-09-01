@@ -1,5 +1,5 @@
 import json
-import os
+from app.config import settings
 from typing import Optional
 
 import httpx
@@ -18,10 +18,10 @@ class LLMClient:
     }
 
     def __init__(self):
-        self.provider = os.getenv("LLM_PROVIDER", "mock").lower()
-        self.api_key = os.getenv("LLM_API_KEY", "")
-        self.base_url = os.getenv("LLM_BASE_URL", "")
-        self.model = os.getenv("LLM_MODEL", "")
+        self.provider = settings.llm_provider.lower()
+        self.api_key = settings.llm_api_key
+        self.base_url = settings.llm_base_url
+        self.model = settings.llm_model
 
         # 为通义千问设置默认 base_url
         if self.provider == "qwen" and not self.base_url:
