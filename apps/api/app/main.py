@@ -1,7 +1,10 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.logging_config import setup_logging
 from app.routers import health, auth, generate
+
+setup_logging()
 
 app = FastAPI(title="小红书运营助手 API", version="0.1.0")
 

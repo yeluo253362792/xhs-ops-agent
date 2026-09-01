@@ -1,8 +1,12 @@
 import json
-from app.config import settings
+import logging
 from typing import Optional
 
 import httpx
+
+from app.config import settings
+
+logger = logging.getLogger(__name__)
 
 
 class LLMClient:
@@ -31,21 +35,28 @@ class LLMClient:
         if self.provider in ("openai", "deepseek") and not self.base_url:
             self.base_url = self.DEFAULT_BASE_URLS.get(self.provider, "")
 
+        logger.info(f"LLMClient initialized: provider={self.provider}, model={self.model}, base_url={self.base_url}")
+
     async def generate(self, system_prompt: str, user_prompt: str) -> str:
         """根据 provider 调用对应 LLM API。"""
         if self.provider == "mock" or not self.api_key:
+            logger.info("Using mock LLM generation")
             return self._mock_generate(user_prompt)
 
         # qwen / openai / deepseek / doubao 均使用 OpenAI 兼容接口
         if self.provider in ("qwen", "openai", "deepseek", "doubao"):
             return await self._call_openai_compatible(system_prompt, user_prompt)
 
+        logger.warning(f"Unknown provider: {self.provider}, fallback to mock")
         return self._mock_generate(user_prompt)
 
     async def _call_openai_compatible(self, system_prompt: str, user_prompt: str) -> str:
         """调用 OpenAI 兼容接口（通义千问、DeepSeek、豆包等均支持）。"""
         if not self.base_url:
             raise ValueError(f"请配置 {self.provider} 的 LLM_BASE_URL")
+
+        if not self.model:
+            raise ValueError(f"请配置 {self.provider} 的 LLM_MODEL")
 
         headers = {
             "Authorization": f"Bearer {self.api_key}",
@@ -60,15 +71,35 @@ class LLMClient:
             "temperature": 0.7,
             "max_tokens": 2000,
         }
-        async with httpx.AsyncClient(timeout=60.0) as client:
-            response = await client.post(
-                f"{self.base_url}/chat/completions",
-                headers=headers,
-                json=payload,
-            )
-            response.raise_for_status()
-            data = response.json()
-            return data["choices"][0]["message"]["content"]
+
+        url = f"{self.base_url}/chat/completions"
+        logger.info(f"Calling LLM API: {url}, model={self.model}")
+
+        try:
+            async with httpx.AsyncClient(timeout=60.0) as client:
+                response = await client.post(url, headers=headers, json=payload)
+                response_text = response.text
+                logger.debug(f"LLM API response status: {response.status_code}, body: {response_text[:500]}")
+
+                if response.status_code != 200:
+                    logger.error(f"LLM API error: status={response.status_code}, body={response_text}")
+                    raise RuntimeError(f"LLM API 请求失败 (HTTP {response.status_code}): {response_text[:500]}")
+
+                data = response.json()
+                if "choices" not in data or not data["choices"]:
+                    logger.error(f"LLM API invalid response: {response_text}")
+                    raise RuntimeError(f"LLM API 返回格式异常: {response_text[:500]}")
+
+                return data["choices"][0]["message"]["content"]
+        except httpx.RequestError as e:
+            logger.error(f"LLM API request error: {str(e)}")
+            raise RuntimeError(f"LLM API 请求异常: {str(e)}")
+        except json.JSONDecodeError as e:
+            logger.error(f"LLM API response JSON decode error: {str(e)}")
+            raise RuntimeError(f"LLM API 返回内容不是有效 JSON: {response_text[:500]}")
+        except KeyError as e:
+            logger.error(f"LLM API response missing key: {str(e)}, body: {response_text[:500]}")
+            raise RuntimeError(f"LLM API 返回缺少字段: {str(e)}")
 
     def _mock_generate(self, user_prompt: str) -> str:
         """本地 mock 生成，用于无 API key 时开发和测试。"""

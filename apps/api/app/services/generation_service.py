@@ -1,4 +1,5 @@
 import json
+import logging
 import re
 from typing import Optional
 
@@ -6,6 +7,8 @@ from app.schemas.generation import GenerateRequest, GenerateResponse, GeneratedC
 from app.services.llm_client import LLMClient
 from app.services.prompt_templates import SYSTEM_PROMPT, build_prompt
 from app.services.compliance_service import check_content_compliance
+
+logger = logging.getLogger(__name__)
 
 
 class GenerationService:
@@ -38,6 +41,7 @@ class GenerationService:
                 remaining_quota=None,  # 由上层根据用户配额填充
             )
         except Exception as e:
+            logger.exception("Generation failed")
             return GenerateResponse(
                 success=False,
                 error=f"生成失败：{str(e)}",
@@ -57,4 +61,13 @@ class GenerationService:
         if start_idx > 0:
             json_str = json_str[start_idx:]
 
-        return json.loads(json_str)
+        # 如果 JSON 后面还有内容，尝试找最后一个 `}`
+        end_idx = json_str.rfind("}")
+        if end_idx > 0:
+            json_str = json_str[: end_idx + 1]
+
+        try:
+            return json.loads(json_str)
+        except json.JSONDecodeError as e:
+            logger.error(f"Failed to parse LLM output as JSON: {raw_output[:500]}")
+            raise RuntimeError(f"LLM 输出无法解析为 JSON: {str(e)}")

@@ -18,9 +18,14 @@ export default function Home() {
 
     try {
       const data = await generateNote(request)
-      setResult(data)
+      if (!data.success) {
+        setError(data.error || '生成失败')
+      } else {
+        setResult(data)
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : '生成失败')
+      const message = err instanceof Error ? err.message : '生成失败'
+      setError(message)
     } finally {
       setLoading(false)
     }
@@ -74,7 +79,10 @@ export default function Home() {
             {error && (
               <div className="bg-red-50 border border-red-100 rounded-2xl p-6 text-red-800">
                 <div className="font-medium mb-1">生成失败</div>
-                <div className="text-sm">{error}</div>
+                <div className="text-sm whitespace-pre-wrap break-words">{error}</div>
+                <div className="text-xs text-red-600 mt-3">
+                  提示：请检查后端服务是否启动，以及 .env 中的 LLM API 配置是否正确。
+                </div>
               </div>
             )}
 

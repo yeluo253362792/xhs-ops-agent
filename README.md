@@ -108,3 +108,50 @@ LLM_MODEL=qwen-plus
 - `qwen-plus`：性价比高，适合大多数场景
 - `qwen-max`：能力最强，适合复杂创意
 - `qwen-turbo`：速度最快，成本最低
+
+## 通义千问 API 故障排查
+
+如果配置真实 API 后生成失败，请按以下步骤排查：
+
+### 1. 查看后端日志
+
+启动后端时会输出详细日志，重点查看 LLM API 调用相关的错误信息：
+
+```bash
+cd apps/api
+source venv/bin/activate
+uvicorn app.main:app --reload
+```
+
+### 2. 测试 API 连通性
+
+```bash
+cd apps/api
+source venv/bin/activate
+python scripts/test_qwen.py
+```
+
+### 3. 常见错误
+
+| 错误 | 原因 | 解决方案 |
+|------|------|----------|
+| `401 Unauthorized` | API Key 无效或未激活 | 检查 `LLM_API_KEY` 是否正确，确认百炼控制台已开通模型服务 |
+| `404 Not Found` | Base URL 错误 | 确认使用 `https://dashscope.aliyuncs.com/compatible-mode/v1` |
+| `400 Bad Request` | 模型名称错误 | 使用 `qwen-plus`、`qwen-max` 或 `qwen-turbo` |
+| 请求超时 | 网络问题 | 检查网络连接，尝试使用代理 |
+| 返回格式异常 | 模型输出非 JSON | 检查模型是否支持 JSON 输出，或改用 `qwen-plus` |
+
+### 4. 验证配置
+
+```bash
+cat apps/api/.env
+```
+
+确认包含：
+
+```bash
+LLM_PROVIDER=qwen
+LLM_API_KEY=sk-xxx
+LLM_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
+LLM_MODEL=qwen-plus
+```

@@ -17,7 +17,7 @@ async def generate_note(
     current_user: User = Depends(get_current_user),
     service: GenerationService = Depends(get_generation_service),
 ):
-    """生成小红书笔记。"""
+    """生成小红书笔记（需登录）。"""
     result = await service.generate(request)
     if not result.success and result.error:
         raise HTTPException(status_code=400, detail=result.error)
@@ -29,7 +29,7 @@ async def generate_note_anonymous(
     request: GenerateRequest,
     service: GenerationService = Depends(get_generation_service),
 ):
-    """匿名生成（用于演示和未登录场景，配额限制）。"""
+    """匿名生成（用于演示和未登录场景）。"""
     result = await service.generate(request)
     if not result.success and result.error:
         raise HTTPException(status_code=400, detail=result.error)
