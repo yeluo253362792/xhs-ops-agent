@@ -1,11 +1,12 @@
 from datetime import datetime, timedelta
-from typing import Any, Optional
+from typing import Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
 from passlib.context import CryptContext
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
@@ -20,6 +21,8 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 # MVP 固定测试用户 UUID（后续替换为真实用户系统）
 TEST_USER_ID = UUID("550e8400-e29b-41d4-a716-446655440000")
+TEST_USER_EMAIL = "user@example.com"
+TEST_USER_PASSWORD_HASH = "mock-hash-not-used-for-verification"
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
@@ -27,7 +30,25 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 
 def get_password_hash(password: str) -> str:
-    return pwd_context.hash(password)
+    return pwd_context.hash(password[:72])
+
+
+async def ensure_test_user(db: AsyncSession) -> User:
+    """确保 MVP 测试用户已写入数据库，避免历史记录外键约束失败。"""
+    result = await db.execute(select(User).where(User.id == TEST_USER_ID))
+    user = result.scalar_one_or_none()
+    if user is None:
+        user = User(
+            id=TEST_USER_ID,
+            email=TEST_USER_EMAIL,
+            password_hash=TEST_USER_PASSWORD_HASH,
+            nickname="测试用户",
+            subscription_tier="free",
+        )
+        db.add(user)
+        await db.commit()
+        await db.refresh(user)
+    return user
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
@@ -51,17 +72,21 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession
     except JWTError:
         raise credentials_exception
 
-    # For dev skeleton, return a mock user without DB lookup
-    return User(
-        id=UUID(user_id) if user_id != str(TEST_USER_ID) else TEST_USER_ID,
-        email="user@example.com",
-        password_hash="",
-        subscription_tier="free",
-    )
+    # 优先从数据库查询；若不存在则自动创建（MVP 阶段兼容 mock 用户）
+    parsed_id = UUID(user_id)
+    result = await db.execute(select(User).where(User.id == parsed_id))
+    user = result.scalar_one_or_none()
+    if user is None:
+        if parsed_id == TEST_USER_ID:
+            user = await ensure_test_user(db)
+        else:
+            raise credentials_exception
+    return user
 
 
 @router.post("/register", response_model=UserOut)
-async def register(user_in: UserCreate):
+async def register(user_in: UserCreate, db: AsyncSession = Depends(get_db)):
+    await ensure_test_user(db)
     return UserOut(
         id=str(TEST_USER_ID),
         email=user_in.email,
@@ -71,7 +96,8 @@ async def register(user_in: UserCreate):
 
 
 @router.post("/login")
-async def login(form_data: OAuth2PasswordRequestForm = Depends()):
+async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)):
+    await ensure_test_user(db)
     access_token = create_access_token(data={"sub": str(TEST_USER_ID)})
     return {"access_token": access_token, "token_type": "bearer"}
 

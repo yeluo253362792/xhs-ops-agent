@@ -1,11 +1,18 @@
+import pytest
 from fastapi.testclient import TestClient
 
 from app.main import app
+from app.database import get_db
 
-client = TestClient(app)
+
+@pytest.fixture
+def client(override_get_db):
+    app.dependency_overrides[get_db] = override_get_db
+    yield TestClient(app)
+    app.dependency_overrides.clear()
 
 
-def test_register():
+def test_register(client):
     response = client.post("/auth/register", json={
         "email": "test@example.com",
         "password": "password123"
@@ -16,7 +23,7 @@ def test_register():
     assert data["subscription_tier"] == "free"
 
 
-def test_login():
+def test_login(client):
     response = client.post("/auth/login", data={
         "username": "test@example.com",
         "password": "password123"
@@ -27,7 +34,7 @@ def test_login():
     assert data["token_type"] == "bearer"
 
 
-def test_read_me():
+def test_read_me(client):
     login_response = client.post("/auth/login", data={
         "username": "test@example.com",
         "password": "password123"
