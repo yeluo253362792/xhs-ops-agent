@@ -81,3 +81,30 @@ make dev-web   # 本地启动前端
 ## 许可证
 
 MIT
+
+## 配置真实 LLM API（通义千问）
+
+本项目默认使用 `mock` 模式生成内容，无需 API key。如需接入真实通义千问模型：
+
+1. 前往 [阿里云百炼控制台](https://bailian.console.aliyun.com/) 申请 API Key。
+2. 复制 `apps/api/.env.example` 为 `apps/api/.env`：
+
+```bash
+cp apps/api/.env.example apps/api/.env
+```
+
+3. 修改环境变量：
+
+```bash
+LLM_PROVIDER=qwen
+LLM_API_KEY=your-dashscope-api-key
+LLM_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
+LLM_MODEL=qwen-plus
+```
+
+4. 重启后端服务。
+
+推荐模型：
+- `qwen-plus`：性价比高，适合大多数场景
+- `qwen-max`：能力最强，适合复杂创意
+- `qwen-turbo`：速度最快，成本最低

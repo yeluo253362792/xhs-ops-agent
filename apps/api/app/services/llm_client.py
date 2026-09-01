@@ -4,11 +4,18 @@ from typing import Optional
 
 import httpx
 
-from app.config import settings
-
 
 class LLMClient:
-    """统一的 LLM 调用客户端，支持多个provider和 fallback。"""
+    """统一的 LLM 调用客户端，支持多 provider 和 fallback。"""
+
+    # 各 provider 默认 base_url
+    DEFAULT_BASE_URLS = {
+        "qwen": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+        "openai": "https://api.openai.com/v1",
+        "deepseek": "https://api.deepseek.com/v1",
+        # 豆包也使用 OpenAI 兼容接口，具体地址需用户在环境变量中配置
+        "doubao": "",
+    }
 
     def __init__(self):
         self.provider = os.getenv("LLM_PROVIDER", "mock").lower()
@@ -16,27 +23,30 @@ class LLMClient:
         self.base_url = os.getenv("LLM_BASE_URL", "")
         self.model = os.getenv("LLM_MODEL", "")
 
+        # 为通义千问设置默认 base_url
+        if self.provider == "qwen" and not self.base_url:
+            self.base_url = self.DEFAULT_BASE_URLS["qwen"]
+
+        # 如果 provider 支持 OpenAI 兼容接口但没有设置 base_url，使用默认地址
+        if self.provider in ("openai", "deepseek") and not self.base_url:
+            self.base_url = self.DEFAULT_BASE_URLS.get(self.provider, "")
+
     async def generate(self, system_prompt: str, user_prompt: str) -> str:
         """根据 provider 调用对应 LLM API。"""
         if self.provider == "mock" or not self.api_key:
             return self._mock_generate(user_prompt)
 
-        if self.provider == "openai":
+        # qwen / openai / deepseek / doubao 均使用 OpenAI 兼容接口
+        if self.provider in ("qwen", "openai", "deepseek", "doubao"):
             return await self._call_openai_compatible(system_prompt, user_prompt)
-
-        if self.provider == "doubao":
-            return await self._call_openai_compatible(system_prompt, user_prompt)
-
-        if self.provider == "deepseek":
-            return await self._call_openai_compatible(system_prompt, user_prompt)
-
-        if self.provider == "qwen":
-            return await self._call_qwen(system_prompt, user_prompt)
 
         return self._mock_generate(user_prompt)
 
     async def _call_openai_compatible(self, system_prompt: str, user_prompt: str) -> str:
-        """调用 OpenAI 兼容接口（DeepSeek、豆包等）。"""
+        """调用 OpenAI 兼容接口（通义千问、DeepSeek、豆包等均支持）。"""
+        if not self.base_url:
+            raise ValueError(f"请配置 {self.provider} 的 LLM_BASE_URL")
+
         headers = {
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json",
@@ -59,28 +69,6 @@ class LLMClient:
             response.raise_for_status()
             data = response.json()
             return data["choices"][0]["message"]["content"]
-
-    async def _call_qwen(self, system_prompt: str, user_prompt: str) -> str:
-        """调用通义千问接口（简化版，实际根据官方文档调整）。"""
-        headers = {
-            "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json",
-        }
-        payload = {
-            "model": self.model,
-            "input": {
-                "messages": [
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_prompt},
-                ]
-            },
-            "parameters": {"temperature": 0.7, "max_tokens": 2000},
-        }
-        async with httpx.AsyncClient(timeout=60.0) as client:
-            response = await client.post(self.base_url, headers=headers, json=payload)
-            response.raise_for_status()
-            data = response.json()
-            return data["output"]["text"]
 
     def _mock_generate(self, user_prompt: str) -> str:
         """本地 mock 生成，用于无 API key 时开发和测试。"""
