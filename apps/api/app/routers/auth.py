@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from typing import Any, Optional
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
@@ -16,6 +17,9 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
+
+# MVP 固定测试用户 UUID（后续替换为真实用户系统）
+TEST_USER_ID = UUID("550e8400-e29b-41d4-a716-446655440000")
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
@@ -48,13 +52,18 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession
         raise credentials_exception
 
     # For dev skeleton, return a mock user without DB lookup
-    return User(id=user_id, email="user@example.com", password_hash="", subscription_tier="free")
+    return User(
+        id=UUID(user_id) if user_id != str(TEST_USER_ID) else TEST_USER_ID,
+        email="user@example.com",
+        password_hash="",
+        subscription_tier="free",
+    )
 
 
 @router.post("/register", response_model=UserOut)
 async def register(user_in: UserCreate):
     return UserOut(
-        id="mock-user-id",
+        id=str(TEST_USER_ID),
         email=user_in.email,
         nickname=None,
         subscription_tier="free",
@@ -63,7 +72,7 @@ async def register(user_in: UserCreate):
 
 @router.post("/login")
 async def login(form_data: OAuth2PasswordRequestForm = Depends()):
-    access_token = create_access_token(data={"sub": form_data.username})
+    access_token = create_access_token(data={"sub": str(TEST_USER_ID)})
     return {"access_token": access_token, "token_type": "bearer"}
 
 

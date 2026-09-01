@@ -36,3 +36,16 @@ export interface GenerateResponse {
   error?: string
   remaining_quota?: number
 }
+
+export interface HistoryItem {
+  id: string
+  user_id: string
+  topic: string
+  audience: string
+  content_type: string
+  tone?: string
+  generated_content: GeneratedContent
+  compliance_result?: ComplianceResult
+  is_favorite: boolean
+  created_at: string
+}

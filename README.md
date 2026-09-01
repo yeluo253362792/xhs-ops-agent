@@ -155,3 +155,15 @@ LLM_API_KEY=sk-xxx
 LLM_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
 LLM_MODEL=qwen-plus
 ```
+
+## 历史记录功能
+
+登录后生成的笔记会自动保存到历史记录。历史记录支持：
+- 查看过往生成的笔记
+- 搜索和筛选（收藏）
+- 收藏/取消收藏
+- 删除
+
+历史记录页面：http://localhost:3000/history
+
+注意：当前 MVP 使用 mock 用户系统，所有登录用户共享同一个测试用户 ID。后续会替换为真实用户系统。

@@ -1,15 +1,20 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import GenerateForm from '@/components/GenerateForm'
 import ResultPanel from '@/components/ResultPanel'
-import { generateNote } from '@/lib/api'
+import { generateNote, login } from '@/lib/api'
 import { GenerateRequest, GenerateResponse } from '@/lib/types'
 
 export default function Home() {
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<GenerateResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [authReady, setAuthReady] = useState(false)
+
+  useEffect(() => {
+    login().then(() => setAuthReady(true)).catch(() => setAuthReady(true))
+  }, [])
 
   const handleGenerate = async (request: GenerateRequest) => {
     setLoading(true)
@@ -40,6 +45,9 @@ export default function Home() {
               <div className="mb-6">
                 <h1 className="text-xl font-bold text-gray-900">小红书运营助手</h1>
                 <p className="text-sm text-gray-500 mt-1">AI 辅助生成爆款图文笔记</p>
+                {!authReady && (
+                  <p className="text-xs text-gray-400 mt-1">正在连接服务...</p>
+                )}
               </div>
               <GenerateForm onSubmit={handleGenerate} loading={loading} />
             </div>
