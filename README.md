@@ -167,3 +167,55 @@ LLM_MODEL=qwen-plus
 历史记录页面：http://localhost:3000/history
 
 注意：当前 MVP 使用 mock 用户系统，所有登录用户共享同一个测试用户 ID。后续会替换为真实用户系统。
+
+## Docker 镜像拉取失败处理
+
+如果执行 `docker-compose up -d` 时报错 `failed to fetch anonymous token` 或 `i/o timeout`，说明 Docker Hub 访问受限。有两种解决方案：
+
+### 方案 1：配置 Docker 镜像加速（推荐）
+
+Docker Desktop 设置：
+
+```json
+{
+  "registry-mirrors": [
+    "https://<your-id>.mirror.aliyuncs.com",
+    "https://docker.mirrors.ustc.edu.cn",
+    "https://hub-mirror.c.163.com"
+  ]
+}
+```
+
+获取阿里云镜像加速器地址：https://cr.console.aliyun.com/cn-hangzhou/instances/mirrors
+
+### 方案 2：使用阿里云镜像地址
+
+我已经在 `docker-compose.yml` 和 `Dockerfile` 中注释了阿里云镜像地址，取消注释即可：
+
+```yaml
+image: registry.cn-hangzhou.aliyuncs.com/library/postgres:16-alpine
+```
+
+```dockerfile
+FROM registry.cn-hangzhou.aliyuncs.com/library/python:3.11-slim
+```
+
+### 方案 3：不用 Docker，本地安装 PostgreSQL + Redis
+
+```bash
+# macOS
+brew install postgresql@16 redis
+brew services start postgresql@16
+brew services start redis
+
+# 创建数据库
+createdb xhs_ops_agent
+```
+
+然后直接启动后端：
+
+```bash
+cd apps/api
+source venv/bin/activate
+uvicorn app.main:app --reload
+```

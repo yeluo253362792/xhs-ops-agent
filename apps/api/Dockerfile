@@ -1,3 +1,5 @@
+# 国内用户如果拉取慢，可改用阿里云镜像：
+# FROM registry.cn-hangzhou.aliyuncs.com/library/python:3.11-slim
 FROM python:3.11-slim
 
 WORKDIR /app
