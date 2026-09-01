@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>小红书运营助手 - 完整原型</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    :root { --xhs-red: #FF2442; --xhs-red-hover: #E02030; --xhs-bg: #F5F5F5; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; background-color: var(--xhs-bg); }
+    .xhs-btn { background-color: var(--xhs-red); color: white; transition: all 0.2s; }
+    .xhs-btn:hover { background-color: var(--xhs-red-hover); }
+    .xhs-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .xhs-btn-outline { border: 1px solid var(--xhs-red); color: var(--xhs-red); background: white; }
+    .xhs-btn-outline:hover { background: #FFF1F2; }
+    .nav-item { transition: all 0.2s; }
+    .nav-item:hover, .nav-item.active { background-color: #FFF1F2; color: var(--xhs-red); }
+    .type-card { transition: all 0.2s; border: 2px solid transparent; }
+    .type-card:hover { border-color: #FECDD3; }
+    .type-card.active { border-color: var(--xhs-red); background-color: #FFF1F2; }
+    .tab-btn.active { color: var(--xhs-red); border-bottom: 2px solid var(--xhs-red); }
+    .page { display: none; animation: fadeIn 0.3s ease-in; }
+    .page.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .skeleton { background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 4px; }
+    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+    .tag-chip { background-color: #FFF1F2; color: var(--xhs-red); }
+    .risk-low { background-color: #DCFCE7; color: #166534; }
+    .risk-medium { background-color: #FEF9C3; color: #854D0E; }
+    .risk-high { background-color: #FEE2E2; color: #991B1B; }
+    .title-option.selected { border-color: var(--xhs-red); background-color: #FFF1F2; }
+    .bar { background-color: var(--xhs-red); border-radius: 4px; }
+    .sidebar { min-height: 100vh; }
+    .plan-card { border: 2px solid #E5E7EB; transition: all 0.2s; }
+    .plan-card.active { border-color: var(--xhs-red); background-color: #FFF1F2; }
+  </style>
+</head>
+<body>
+  <div class="flex flex-col md:flex-row min-h-screen">
+    <!-- Sidebar -->
+    <aside class="sidebar w-full md:w-64 bg-white shadow-sm flex-shrink-0">
+      <div class="p-6 border-b border-gray-100">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl flex items-center justify-center text-white font-bold" style="background-color: var(--xhs-red);">红</div>
+          <div>
+            <h1 class="font-bold text-gray-900">小红书运营助手</h1>
+            <p class="text-xs text-gray-500">AI 爆款笔记生成</p>
+          </div>
+        </div>
+      </div>
+      <nav class="p-4 space-y-1">
+        <a href="#" class="nav-item active flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-700" data-page="generate">
+          <i data-lucide="pen-tool" class="w-4 h-4"></i> 生成笔记
+        </a>
+        <a href="#" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-700" data-page="batch">
+          <i data-lucide="layers" class="w-4 h-4"></i> 批量生成
+          <span class="ml-auto text-xs px-2 py-0.5 rounded-full bg-purple-100 text-purple-700">P2</span>
+        </a>
+        <a href="#" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-700" data-page="templates">
+          <i data-lucide="layout-grid" class="w-4 h-4"></i> 模板库
+          <span class="ml-auto text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">P1</span>
+        </a>
+        <a href="#" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-700" data-page="history">
+          <i data-lucide="history" class="w-4 h-4"></i> 历史记录
+        </a>
+        <a href="#" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-700" data-page="compliance">
+          <i data-lucide="shield-check" class="w-4 h-4"></i> 合规检测
+        </a>
+        <a href="#" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-700" data-page="analytics">
+          <i data-lucide="bar-chart-3" class="w-4 h-4"></i> 数据复盘
+          <span class="ml-auto text-xs px-2 py-0.5 rounded-full bg-purple-100 text-purple-700">P2</span>
+        </a>
+        <a href="#" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-700" data-page="publish">
+          <i data-lucide="rocket" class="w-4 h-4"></i> 一键发布
+          <span class="ml-auto text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">P1</span>
+        </a>
+        <a href="#" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-700" data-page="account">
+          <i data-lucide="user" class="w-4 h-4"></i> 账户与订阅
+        </a>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 min-w-0">
+      <!-- Top Bar -->
+      <header class="bg-white shadow-sm sticky top-0 z-40 px-6 py-4 flex items-center justify-between">
+        <h2 id="pageTitle" class="text-lg font-bold text-gray-900">生成笔记</h2>
+        <div class="flex items-center gap-4">
+          <div class="text-sm text-gray-600 hidden sm:block">
+            今日剩余 <span class="font-bold" style="color: var(--xhs-red);">3</span> 次
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
+              <i data-lucide="user" class="w-4 h-4 text-gray-500"></i>
+            </div>
+            <span class="text-sm text-gray-700 hidden sm:block">免费用户</span>
+          </div>
+        </div>
+      </header>
+
+      <div class="p-4 md:p-8">
+        <!-- PAGE: GENERATE -->
+        <section id="page-generate" class="page active">
+          <div class="grid grid-cols-1 xl:grid-cols-12 gap-6">
+            <div class="xl:col-span-5 space-y-6">
+              <div class="bg-white rounded-2xl shadow-sm p-6">
+                <h3 class="font-bold text-gray-900 mb-5">创作设置</h3>
+                <form id="generateForm" class="space-y-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1.5">主题 / 关键词 <span class="text-red-500">*</span></label>
+                    <input type="text" id="topic" value="油皮夏季护肤" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-red-200 focus:border-red-400">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1.5">目标受众 <span class="text-red-500">*</span></label>
+                    <input type="text" id="audience" value="20-30岁油皮女生" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-red-200 focus:border-red-400">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">笔记类型 <span class="text-red-500">*</span></label>
+                    <div class="grid grid-cols-2 gap-2" id="typeGrid">
+                      <div class="type-card active rounded-xl p-3 cursor-pointer" data-type="干货收藏型"><div class="font-medium text-sm">干货收藏型</div><div class="text-xs text-gray-500">教程/清单</div></div>
+                      <div class="type-card rounded-xl p-3 cursor-pointer" data-type="种草带货型"><div class="font-medium text-sm">种草带货型</div><div class="text-xs text-gray-500">产品推荐</div></div>
+                      <div class="type-card rounded-xl p-3 cursor-pointer" data-type="情绪共鸣型"><div class="font-medium text-sm">情绪共鸣型</div><div class="text-xs text-gray-500">故事感悟</div></div>
+                      <div class="type-card rounded-xl p-3 cursor-pointer" data-type="争议讨论型"><div class="font-medium text-sm">争议讨论型</div><div class="text-xs text-gray-500">观点对比</div></div>
+                      <div class="type-card rounded-xl p-3 cursor-pointer" data-type="涨粉型"><div class="font-medium text-sm">涨粉型</div><div class="text-xs text-gray-500">人设价值</div></div>
+                    </div>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1.5">语气风格</label>
+                    <select id="tone" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-red-200 focus:border-red-400">
+                      <option>亲切自然</option><option>专业靠谱</option><option>轻松幽默</option><option>犀利直接</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1.5">补充信息</label>
+                    <textarea id="extra" rows="2" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-red-200 focus:border-red-400 resize-none" placeholder="产品名、个人经历等"></textarea>
+                  </div>
+                  <button type="submit" class="xhs-btn w-full py-3 rounded-xl font-medium flex items-center justify-center gap-2">
+                    <i data-lucide="sparkles" class="w-4 h-4"></i> 生成笔记
+                  </button>
+                </form>
+              </div>
+              <!-- 对标分析 P1 -->
+              <div class="bg-white rounded-2xl shadow-sm p-6">
+                <div class="flex items-center justify-between mb-4">
+                  <h3 class="font-bold text-gray-900 flex items-center gap-2">
+                    <i data-lucide="search" class="w-4 h-4 text-blue-500"></i> 对标笔记分析
+                    <span class="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">P1</span>
+                  </h3>
+                </div>
+                <div class="space-y-3">
+                  <input type="text" id="referenceUrl" placeholder="粘贴小红书笔记链接" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm">
+                  <textarea id="referenceContent" rows="3" placeholder="或粘贴笔记正文" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm resize-none"></textarea>
+                  <button onclick="analyzeReference()" class="xhs-btn-outline w-full py-2.5 rounded-xl text-sm font-medium">分析并仿写</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="xl:col-span-7">
+              <div id="generateEmpty" class="bg-white rounded-2xl shadow-sm p-12 text-center min-h-[500px] flex flex-col items-center justify-center">
+                <div class="w-20 h-20 rounded-full bg-red-50 flex items-center justify-center mb-4"><i data-lucide="pen-tool" class="w-10 h-10" style="color: var(--xhs-red);"></i></div>
+                <h3 class="text-lg font-bold text-gray-900 mb-2">开始创作你的小红书笔记</h3>
+                <p class="text-sm text-gray-500">填写左侧信息，AI 将生成完整图文方案</p>
+              </div>
+              <div id="generateLoading" class="hidden bg-white rounded-2xl shadow-sm p-8 min-h-[500px]">
+                <div class="flex items-center gap-3 mb-6">
+                  <div class="w-8 h-8 rounded-full bg-red-50 flex items-center justify-center"><i data-lucide="loader-2" class="w-5 h-5 animate-spin" style="color: var(--xhs-red);"></i></div>
+                  <div><h3 class="font-bold text-gray-900">正在生成...</h3><p class="text-xs text-gray-500">AI 撰写文案、检测合规、输出视觉方案</p></div>
+                </div>
+                <div class="space-y-3"><div class="skeleton h-4 w-3/4"></div><div class="skeleton h-4 w-full"></div><div class="skeleton h-4 w-5/6"></div><div class="skeleton h-24 w-full mt-6"></div><div class="skeleton h-4 w-1/2"></div></div>
+              </div>
+              <div id="generateResult" class="hidden bg-white rounded-2xl shadow-sm overflow-hidden">
+                <div class="p-5 border-b border-gray-100">
+                  <div class="flex items-start justify-between mb-4">
+                    <div><h2 class="font-bold text-gray-900">生成结果</h2><p class="text-xs text-gray-500 mt-1">已生成图文笔记方案</p></div>
+                    <div id="generateComplianceBadge" class="px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1"></div>
+                  </div>
+                  <div class="flex gap-5 border-b border-gray-100 overflow-x-auto">
+                    <button class="tab-btn active pb-2 text-sm font-medium text-gray-600" data-tab="g-titles">标题</button>
+                    <button class="tab-btn pb-2 text-sm font-medium text-gray-600" data-tab="g-body">正文</button>
+                    <button class="tab-btn pb-2 text-sm font-medium text-gray-600" data-tab="g-tags">标签</button>
+                    <button class="tab-btn pb-2 text-sm font-medium text-gray-600" data-tab="g-cover">封面</button>
+                    <button class="tab-btn pb-2 text-sm font-medium text-gray-600" data-tab="g-images">图片脚本</button>
+                    <button class="tab-btn pb-2 text-sm font-medium text-gray-600" data-tab="g-compliance">合规</button>
+                    <button class="tab-btn pb-2 text-sm font-medium text-gray-600" data-tab="g-publish">发布建议</button>
+                  </div>
+                </div>
+                <div class="p-5 min-h-[300px]">
+                  <div id="g-titles" class="result-panel active space-y-3"></div>
+                  <div id="g-body" class="result-panel"><div class="flex justify-between mb-2"><span class="text-sm font-medium text-gray-700">正文</span><button onclick="copyElement('g-bodyText')" class="text-xs bg-gray-100 px-2 py-1 rounded flex items-center gap-1"><i data-lucide="copy" class="w-3 h-3"></i>复制</button></div><div id="g-bodyText" class="bg-gray-50 rounded-xl p-4 text-sm leading-relaxed whitespace-pre-wrap"></div></div>
+                  <div id="g-tags" class="result-panel"><div class="flex justify-between mb-2"><span class="text-sm font-medium text-gray-700">标签</span><button onclick="copyTags()" class="text-xs bg-gray-100 px-2 py-1 rounded flex items-center gap-1"><i data-lucide="copy" class="w-3 h-3"></i>复制</button></div><div id="g-tagsList" class="flex flex-wrap gap-2"></div></div>
+                  <div id="g-cover" class="result-panel"><h4 class="text-sm font-medium text-gray-700 mb-2">封面文案</h4><div id="g-coverText" class="bg-red-50 border border-red-100 rounded-xl p-4 text-lg font-bold text-gray-900 mb-4"></div><h4 class="text-sm font-medium text-gray-700 mb-2">设计建议</h4><div id="g-coverDesign" class="space-y-2 text-sm text-gray-700"></div></div>
+                  <div id="g-images" class="result-panel"><div class="flex justify-between mb-2"><h4 class="text-sm font-medium text-gray-700">图片脚本</h4><span id="g-imageCount" class="text-xs text-gray-500"></span></div><div id="g-imageScript" class="space-y-3"></div></div>
+                  <div id="g-compliance" class="result-panel"><h4 class="text-sm font-medium text-gray-700 mb-2">合规检测</h4><div id="g-complianceDetail" class="space-y-3"></div></div>
+                  <div id="g-publish" class="result-panel"><h4 class="text-sm font-medium text-gray-700 mb-2">发布与运营建议</h4><div id="g-publishSuggestions" class="space-y-2 text-sm text-gray-700"></div></div>
+                </div>
+                <div class="px-5 py-3 bg-gray-50 border-t border-gray-100 flex flex-wrap gap-2">
+                  <button onclick="copyAll()" class="px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm flex items-center gap-1"><i data-lucide="copy" class="w-4 h-4"></i>复制全部</button>
+                  <button onclick="saveResult()" class="px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm flex items-center gap-1"><i data-lucide="bookmark" class="w-4 h-4"></i>保存</button>
+                  <button onclick="importToPlugin()" class="xhs-btn px-3 py-2 rounded-lg text-sm flex items-center gap-1"><i data-lucide="plug" class="w-4 h-4"></i>插件导入</button>
+                  <button onclick="aiGenerateImage()" class="px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm flex items-center gap-1 text-purple-700 border-purple-200"><i data-lucide="image" class="w-4 h-4"></i>AI 生成封面</button>
+                  <button onclick="regenerate()" class="ml-auto px-3 py-2 text-sm font-medium flex items-center gap-1" style="color: var(--xhs-red);"><i data-lucide="refresh-cw" class="w-4 h-4"></i>重新生成</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- PAGE: BATCH -->
+        <section id="page-batch" class="page">
+          <div class="bg-white rounded-2xl shadow-sm p-6 mb-6">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="font-bold text-gray-900">批量生成</h3>
+              <span class="text-xs px-2 py-1 rounded-full bg-purple-100 text-purple-700">P2 高级功能</span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+              <select id="batchType" class="px-4 py-2.5 rounded-xl border border-gray-200">
+                <option>干货收藏型</option><option>种草带货型</option><option>情绪共鸣型</option><option>争议讨论型</option><option>涨粉型</option>
+              </select>
+              <select id="batchTone" class="px-4 py-2.5 rounded-xl border border-gray-200">
+                <option>亲切自然</option><option>专业靠谱</option><option>轻松幽默</option><option>犀利直接</option>
+              </select>
+              <input type="text" id="batchAudience" value="20-30岁女性" class="px-4 py-2.5 rounded-xl border border-gray-200" placeholder="目标受众">
+            </div>
+            <textarea id="batchTopics" rows="6" class="w-full px-4 py-3 rounded-xl border border-gray-200 resize-none mb-4" placeholder="每行一个主题，例如：&#10;油皮夏季护肤&#10;新手化妆误区&#10;平价防晒霜推荐"></textarea>
+            <button onclick="batchGenerate()" class="xhs-btn px-6 py-2.5 rounded-xl font-medium">开始批量生成</button>
+          </div>
+          <div id="batchResults" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+        </section>
+
+        <!-- PAGE: TEMPLATES -->
+        <section id="page-templates" class="page">
+          <div class="bg-white rounded-2xl shadow-sm p-6 mb-6">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="font-bold text-gray-900">爆款模板库</h3>
+              <span class="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-700">P1</span>
+            </div>
+            <div class="flex gap-2 flex-wrap">
+              <button class="template-filter active px-4 py-2 rounded-full text-sm bg-red-50 font-medium" style="color: var(--xhs-red);" data-filter="all">全部</button>
+              <button class="template-filter px-4 py-2 rounded-full text-sm bg-gray-100 text-gray-600" data-filter="beauty">美妆</button>
+              <button class="template-filter px-4 py-2 rounded-full text-sm bg-gray-100 text-gray-600" data-filter="fashion">穿搭</button>
+              <button class="template-filter px-4 py-2 rounded-full text-sm bg-gray-100 text-gray-600" data-filter="food">美食</button>
+              <button class="template-filter px-4 py-2 rounded-full text-sm bg-gray-100 text-gray-600" data-filter="travel">旅行</button>
+              <button class="template-filter px-4 py-2 rounded-full text-sm bg-gray-100 text-gray-600" data-filter="career">职场</button>
+              <button class="template-filter px-4 py-2 rounded-full text-sm bg-gray-100 text-gray-600" data-filter="knowledge">知识</button>
+            </div>
+          </div>
+          <div id="templatesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+        </section>
+
+        <!-- PAGE: HISTORY -->
+        <section id="page-history" class="page">
+          <div class="bg-white rounded-2xl shadow-sm p-6 mb-6">
+            <div class="flex flex-col sm:flex-row gap-4">
+              <input type="text" id="historySearch" placeholder="搜索历史记录..." class="flex-1 px-4 py-2.5 rounded-xl border border-gray-200">
+              <select id="historyFilter" class="px-4 py-2.5 rounded-xl border border-gray-200">
+                <option value="all">全部</option><option value="favorite">收藏</option><option value="recent">最近 7 天</option>
+              </select>
+            </div>
+          </div>
+          <div id="historyList" class="space-y-4"></div>
+        </section>
+
+        <!-- PAGE: COMPLIANCE -->
+        <section id="page-compliance" class="page">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="bg-white rounded-2xl shadow-sm p-6">
+              <h3 class="font-bold text-gray-900 mb-4">文本合规检测</h3>
+              <textarea id="complianceInput" rows="12" class="w-full px-4 py-3 rounded-xl border border-gray-200 resize-none mb-4" placeholder="粘贴你要检测的小红书文案..."></textarea>
+              <button onclick="checkCompliance()" class="xhs-btn w-full py-3 rounded-xl font-medium">开始检测</button>
+            </div>
+            <div class="bg-white rounded-2xl shadow-sm p-6">
+              <h3 class="font-bold text-gray-900 mb-4">检测结果</h3>
+              <div id="complianceResult" class="space-y-4">
+                <div class="text-center text-gray-400 py-12">输入文案后点击检测</div>
+              </div>
+            </div>
+          </div>
+          <!-- 合规评分 P2 -->
+          <div class="bg-white rounded-2xl shadow-sm p-6 mt-6">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="font-bold text-gray-900">高级合规评分</h3>
+              <span class="text-xs px-2 py-1 rounded-full bg-purple-100 text-purple-700">P2</span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div class="bg-gray-50 rounded-xl p-4 text-center">
+                <div class="text-2xl font-bold" style="color: var(--xhs-red);">92</div>
+                <div class="text-xs text-gray-500">综合合规分</div>
+              </div>
+              <div class="bg-gray-50 rounded-xl p-4 text-center">
+                <div class="text-2xl font-bold text-green-600">优</div>
+                <div class="text-xs text-gray-500">敏感词检测</div>
+              </div>
+              <div class="bg-gray-50 rounded-xl p-4 text-center">
+                <div class="text-2xl font-bold text-yellow-600">中</div>
+                <div class="text-xs text-gray-500">广告声明</div>
+              </div>
+              <div class="bg-gray-50 rounded-xl p-4 text-center">
+                <div class="text-2xl font-bold text-green-600">优</div>
+                <div class="text-xs text-gray-500">高风险类目</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- PAGE: ANALYTICS -->
+        <section id="page-analytics" class="page">
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div class="bg-white rounded-2xl shadow-sm p-5"><div class="text-2xl font-bold text-gray-900">24</div><div class="text-sm text-gray-500">本月生成笔记</div></div>
+            <div class="bg-white rounded-2xl shadow-sm p-5"><div class="text-2xl font-bold text-gray-900">18</div><div class="text-sm text-gray-500">已发布笔记</div></div>
+            <div class="bg-white rounded-2xl shadow-sm p-5"><div class="text-2xl font-bold text-gray-900">1.2k</div><div class="text-sm text-gray-500">总互动量</div></div>
+            <div class="bg-white rounded-2xl shadow-sm p-5"><div class="text-2xl font-bold" style="color: var(--xhs-red);">8.5%</div><div class="text-sm text-gray-500">平均互动率</div></div>
+          </div>
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="bg-white rounded-2xl shadow-sm p-6">
+              <h3 class="font-bold text-gray-900 mb-4">生成 vs 发布趋势</h3>
+              <div class="space-y-3">
+                <div class="flex items-center gap-3"><span class="text-xs text-gray-500 w-10">周一</span><div class="flex-1 h-6 bg-gray-100 rounded-full overflow-hidden"><div class="bar h-full" style="width: 60%"></div></div><span class="text-xs text-gray-600 w-8">6</span></div>
+                <div class="flex items-center gap-3"><span class="text-xs text-gray-500 w-10">周二</span><div class="flex-1 h-6 bg-gray-100 rounded-full overflow-hidden"><div class="bar h-full" style="width: 80%"></div></div><span class="text-xs text-gray-600 w-8">8</span></div>
+                <div class="flex items-center gap-3"><span class="text-xs text-gray-500 w-10">周三</span><div class="flex-1 h-6 bg-gray-100 rounded-full overflow-hidden"><div class="bar h-full" style="width: 40%"></div></div><span class="text-xs text-gray-600 w-8">4</span></div>
+                <div class="flex items-center gap-3"><span class="text-xs text-gray-500 w-10">周四</span><div class="flex-1 h-6 bg-gray-100 rounded-full overflow-hidden"><div class="bar h-full" style="width: 90%"></div></div><span class="text-xs text-gray-600 w-8">9</span></div>
+                <div class="flex items-center gap-3"><span class="text-xs text-gray-500 w-10">周五</span><div class="flex-1 h-6 bg-gray-100 rounded-full overflow-hidden"><div class="bar h-full" style="width: 50%"></div></div><span class="text-xs text-gray-600 w-8">5</span></div>
+              </div>
+            </div>
+            <div class="bg-white rounded-2xl shadow-sm p-6">
+              <h3 class="font-bold text-gray-900 mb-4">爆款类型表现</h3>
+              <div class="space-y-3">
+                <div><div class="flex justify-between text-sm mb-1"><span>干货收藏型</span><span class="font-medium">35%</span></div><div class="h-2 bg-gray-100 rounded-full"><div class="bar h-2 rounded-full" style="width: 35%"></div></div></div>
+                <div><div class="flex justify-between text-sm mb-1"><span>种草带货型</span><span class="font-medium">28%</span></div><div class="h-2 bg-gray-100 rounded-full"><div class="bar h-2 rounded-full" style="width: 28%"></div></div></div>
+                <div><div class="flex justify-between text-sm mb-1"><span>情绪共鸣型</span><span class="font-medium">22%</span></div><div class="h-2 bg-gray-100 rounded-full"><div class="bar h-2 rounded-full" style="width: 22%"></div></div></div>
+                <div><div class="flex justify-between text-sm mb-1"><span>争议讨论型</span><span class="font-medium">10%</span></div><div class="h-2 bg-gray-100 rounded-full"><div class="bar h-2 rounded-full" style="width: 10%"></div></div></div>
+                <div><div class="flex justify-between text-sm mb-1"><span>涨粉型</span><span class="font-medium">5%</span></div><div class="h-2 bg-gray-100 rounded-full"><div class="bar h-2 rounded-full" style="width: 5%"></div></div></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- PAGE: PUBLISH -->
+        <section id="page-publish" class="page">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- P1 浏览器插件 -->
+            <div class="bg-white rounded-2xl shadow-sm p-6">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="font-bold text-gray-900 flex items-center gap-2"><i data-lucide="plug" class="w-5 h-5 text-blue-500"></i> 浏览器插件</h3>
+                <span class="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-700">P1</span>
+              </div>
+              <div class="space-y-4">
+                <div class="flex items-center justify-between p-4 bg-green-50 rounded-xl">
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center"><i data-lucide="check" class="w-5 h-5 text-green-600"></i></div>
+                    <div><div class="font-medium text-sm">插件已安装</div><div class="text-xs text-gray-500">Chrome 浏览器 · v1.0.2</div></div>
+                  </div>
+                  <span class="text-xs px-2 py-1 bg-green-200 text-green-800 rounded-full">运行中</span>
+                </div>
+                <div class="text-sm text-gray-600 space-y-2">
+                  <p>✅ 已连接小红书创作服务平台</p>
+                  <p>✅ 支持一键导入标题、正文、标签</p>
+                  <p>⚠️ 封面图片仍需手动上传</p>
+                </div>
+                <button class="xhs-btn-outline w-full py-2.5 rounded-xl text-sm font-medium">管理插件设置</button>
+              </div>
+            </div>
+            <!-- P2 真正一键发布 -->
+            <div class="bg-white rounded-2xl shadow-sm p-6">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="font-bold text-gray-900 flex items-center gap-2"><i data-lucide="zap" class="w-5 h-5 text-purple-500"></i> 真正一键自动发布</h3>
+                <span class="text-xs px-2 py-1 rounded-full bg-purple-100 text-purple-700">P2</span>
+              </div>
+              <div class="space-y-4">
+                <div class="p-4 bg-yellow-50 border border-yellow-200 rounded-xl">
+                  <div class="flex items-start gap-2">
+                    <i data-lucide="alert-triangle" class="w-4 h-4 text-yellow-600 flex-shrink-0 mt-0.5"></i>
+                    <div class="text-sm text-yellow-800">
+                      <div class="font-medium">风险提示</div>
+                      <div>自动发布可能违反小红书服务条款，存在账号风控风险。请谨慎使用。</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                  <div><div class="font-medium text-sm">账号授权状态</div><div class="text-xs text-gray-500">未绑定小红书账号</div></div>
+                  <button class="xhs-btn px-3 py-1.5 rounded-lg text-xs">扫码授权</button>
+                </div>
+                <div class="flex items-center justify-between">
+                  <span class="text-sm text-gray-700">启用自动发布</span>
+                  <div class="w-11 h-6 bg-gray-200 rounded-full relative cursor-pointer"><div class="w-5 h-5 bg-white rounded-full absolute top-0.5 left-0.5 shadow"></div></div>
+                </div>
+                <button class="xhs-btn-outline w-full py-2.5 rounded-xl text-sm font-medium" disabled>高级会员可用</button>
+              </div>
+            </div>
+          </div>
+          <!-- 发布队列 -->
+          <div class="bg-white rounded-2xl shadow-sm p-6 mt-6">
+            <h3 class="font-bold text-gray-900 mb-4">发布队列</h3>
+            <div class="space-y-3">
+              <div class="flex items-center justify-between p-4 border border-gray-100 rounded-xl">
+                <div><div class="font-medium text-sm">油皮夏季护肤全攻略</div><div class="text-xs text-gray-500">计划发布：今天 20:30</div></div>
+                <span class="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full">待发布</span>
+              </div>
+              <div class="flex items-center justify-between p-4 border border-gray-100 rounded-xl">
+                <div><div class="font-medium text-sm">新手化妆十大误区</div><div class="text-xs text-gray-500">已发布：昨天 21:00</div></div>
+                <span class="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full">已发布</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- PAGE: ACCOUNT -->
+        <section id="page-account" class="page">
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="lg:col-span-2 space-y-6">
+              <div class="bg-white rounded-2xl shadow-sm p-6">
+                <h3 class="font-bold text-gray-900 mb-4">订阅计划</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div class="plan-card rounded-xl p-5">
+                    <div class="font-bold text-lg mb-1">免费版</div>
+                    <div class="text-2xl font-bold text-gray-900 mb-3">¥0<span class="text-sm font-normal text-gray-500">/月</span></div>
+                    <ul class="text-sm text-gray-600 space-y-2 mb-4">
+                      <li>每日 3 次生成</li>
+                      <li>基础模板</li>
+                      <li>基础合规检测</li>
+                    </ul>
+                    <button class="w-full py-2 rounded-lg border border-gray-200 text-sm">当前计划</button>
+                  </div>
+                  <div class="plan-card active rounded-xl p-5">
+                    <div class="font-bold text-lg mb-1">基础会员</div>
+                    <div class="text-2xl font-bold text-gray-900 mb-3">¥19<span class="text-sm font-normal text-gray-500">/月</span></div>
+                    <ul class="text-sm text-gray-600 space-y-2 mb-4">
+                      <li>无限生成</li>
+                      <li>浏览器插件导入</li>
+                      <li>全部基础模板</li>
+                    </ul>
+                    <button class="xhs-btn w-full py-2 rounded-lg text-sm">升级</button>
+                  </div>
+                  <div class="plan-card rounded-xl p-5">
+                    <div class="font-bold text-lg mb-1">高级会员</div>
+                    <div class="text-2xl font-bold text-gray-900 mb-3">¥49<span class="text-sm font-normal text-gray-500">/月</span></div>
+                    <ul class="text-sm text-gray-600 space-y-2 mb-4">
+                      <li>一键自动发布</li>
+                      <li>合规评分</li>
+                      <li>批量生成</li>
+                    </ul>
+                    <button class="xhs-btn-outline w-full py-2 rounded-lg text-sm">升级</button>
+                  </div>
+                </div>
+              </div>
+              <div class="bg-white rounded-2xl shadow-sm p-6">
+                <h3 class="font-bold text-gray-900 mb-4">使用统计</h3>
+                <div class="grid grid-cols-3 gap-4 text-center">
+                  <div><div class="text-xl font-bold">12</div><div class="text-xs text-gray-500">本月生成</div></div>
+                  <div><div class="text-xl font-bold">8</div><div class="text-xs text-gray-500">本月发布</div></div>
+                  <div><div class="text-xl font-bold">3</div><div class="text-xs text-gray-500">剩余次数</div></div>
+                </div>
+              </div>
+            </div>
+            <div class="bg-white rounded-2xl shadow-sm p-6 h-fit">
+              <h3 class="font-bold text-gray-900 mb-4">账户信息</h3>
+              <div class="space-y-4 text-sm">
+                <div><div class="text-gray-500">邮箱</div><div>user@example.com</div></div>
+                <div><div class="text-gray-500">注册时间</div><div>2026-09-01</div></div>
+                <div><div class="text-gray-500">当前计划</div><div>免费版</div></div>
+                <button class="w-full py-2 rounded-lg border border-gray-200 text-sm">退出登录</button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <!-- AI Image Modal -->
+  <div id="imageModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="font-bold text-gray-900">AI 生成封面图</h3>
+        <button onclick="closeImageModal()" class="p-2 hover:bg-gray-100 rounded-lg"><i data-lucide="x" class="w-5 h-5 text-gray-500"></i></button>
+      </div>
+      <div id="imageGenLoading" class="py-8 text-center">
+        <div class="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-3"><i data-lucide="loader-2" class="w-6 h-6 animate-spin" style="color: var(--xhs-red);"></i></div>
+        <p class="text-sm text-gray-600">AI 正在生成封面图...</p>
+      </div>
+      <div id="imageGenResult" class="hidden text-center">
+        <div class="w-full h-64 bg-gradient-to-br from-pink-100 to-red-100 rounded-xl flex items-center justify-center mb-4">
+          <div class="text-center p-6">
+            <div class="text-2xl font-bold text-gray-800 mb-2">封面预览</div>
+            <div class="text-sm text-gray-600">这里将显示 AI 生成的封面图</div>
+          </div>
+        </div>
+        <p class="text-xs text-gray-500 mb-4">P2 阶段将接入真实 AI 生图 API</p>
+        <button class="xhs-btn px-4 py-2 rounded-lg text-sm">下载封面</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-6 py-3 rounded-full text-sm opacity-0 pointer-events-none transition-opacity duration-300 z-50"></div>
+
+  <script>
+    lucide.createIcons();
+
+    let selectedType = '干货收藏型';
+    let currentResult = null;
+
+    // Navigation
+    document.querySelectorAll('.nav-item').forEach(item => {
+      item.addEventListener('click', (e) => {
+        e.preventDefault();
+        const page = item.dataset.page;
+        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        item.classList.add('active');
+        document.getElementById('page-' + page).classList.add('active');
+        document.getElementById('pageTitle').textContent = item.textContent.trim().replace(/P[12].*/, '');
+        lucide.createIcons();
+      });
+    });
+
+    // Type cards
+    document.querySelectorAll('.type-card').forEach(card => {
+      card.addEventListener('click', () => {
+        document.querySelectorAll('.type-card').forEach(c => c.classList.remove('active'));
+        card.classList.add('active');
+        selectedType = card.dataset.type;
+      });
+    });
+
+    // Generate tabs
+    document.querySelectorAll('#generateResult .tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const tab = btn.dataset.tab;
+        document.querySelectorAll('#generateResult .tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('#generateResult .result-panel').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(tab).classList.add('active');
+      });
+    });
+
+    // Generate form
+    document.getElementById('generateForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const topic = document.getElementById('topic').value.trim();
+      const audience = document.getElementById('audience').value.trim();
+      if (!topic || !audience) { showToast('请填写主题和受众'); return; }
+      document.getElementById('generateEmpty').classList.add('hidden');
+      document.getElementById('generateResult').classList.add('hidden');
+      document.getElementById('generateLoading').classList.remove('hidden');
+      await new Promise(r => setTimeout(r, 1800));
+      currentResult = generateResult(topic, audience, selectedType);
+      renderGenerateResult(currentResult);
+      document.getElementById('generateLoading').classList.add('hidden');
+      document.getElementById('generateResult').classList.remove('hidden');
+      lucide.createIcons();
+    });
+
+    function generateResult(topic, audience, type) {
+      const data = {
+        '干货收藏型': {
+          titles: [`${topic}｜这篇攻略整理了一周，建议收藏`, `拯救${audience}！${topic}的正确打开方式`, `${topic}全攻略✅ 看完这篇就够了`],
+          body: `姐妹们！今天来聊聊${topic}。\n\n作为${audience}，我真的踩过太多坑了。\n\n✨ 第一步：认清问题\n很多人一开始就做错了。\n\n✨ 第二步：建立正确流程\n1. 做好基础准备\n2. 选择合适的方法\n3. 坚持 2-4 周看效果\n\n✨ 第三步：避开常见误区\n• 不要盲目跟风\n• 不要急于求成\n\n💡 如果觉得有用，记得点赞收藏！`,
+          tags: [`#${topic.replace(/[！|｜]/g, '')}`, `#${audience}`, `#干货分享`, `#收藏夹吃灰系列`, `#变美日记`],
+          cover: `${topic}\n3步搞定`,
+          images: [
+            { content: '痛点场景图', desc: '自然光拍摄，表现困扰场景', text: '你是不是也有这个烦恼？' },
+            { content: '步骤一说明', desc: '方法/产品特写，背景干净', text: '第一步：找准问题' },
+            { content: '步骤二说明', desc: '动作/使用过程展示', text: '第二步：正确流程' },
+            { content: '避坑清单', desc: '文字卡片，红叉标注误区', text: '这些坑千万别踩' },
+            { content: '总结图', desc: '要点回顾，适合收藏', text: '一图看懂全流程' }
+          ],
+          compliance: { level: 'low', issues: ['未检测到敏感词'], suggestions: ['内容合规，可放心发布'] }
+        },
+        '种草带货型': {
+          titles: [`被问了100遍的${topic}，今天摊牌了`, `${audience}必看！这个${topic}真的好用`, `自用无广｜关于${topic}的真实分享`],
+          body: `最近被很多姐妹问${topic}，今天必须来分享一下！\n\n先说下我的情况：${audience}。\n\n直到遇到它——真的有点东西。\n\n🌟 使用感受\n质地很舒服，吸收也很快。\n\n🌟 适合人群\n• ${audience}\n• 想要改善问题的\n\n🌟 小缺点\n香味比较淡，容量不大。\n\n总体值得回购！`,
+          tags: [`#${topic.replace(/[！|｜]/g, '')}`, `#好物分享`, `#种草`, `#${audience}`, `#真实测评`],
+          cover: `亲测好用\n${topic}`,
+          images: [
+            { content: '产品全貌', desc: '产品平铺，背景干净有质感', text: '就是它！' },
+            { content: '质地展示', desc: '挤在手背/纸巾上，光线柔和', text: '质地这样' },
+            { content: '使用场景', desc: '真实使用过程，自然不做作', text: '我的使用方式' },
+            { content: '效果展示', desc: '避免夸张对比，用状态描述', text: '坚持用的变化' },
+            { content: '优缺点总结', desc: '文字卡片，客观中立', text: '优缺点一览' }
+          ],
+          compliance: { level: 'medium', issues: ['检测到商业推广倾向'], suggestions: ['建议添加 #自费购买 或 #合作 声明', '避免绝对化功效描述'] }
+        }
+      };
+      const base = data[type] || data['干货收藏型'];
+      return {
+        topic, audience, type, ...base,
+        coverDesign: ['尺寸：3:4 竖图', '构图：主体清晰，文字占比约 1/5', '配色：清爽明亮', '字体：粗体无衬线，白字深色描边'],
+        publishSuggestions: ['最佳时间：工作日 20:00-22:00', '添加 5-8 个相关标签', '发布后 30 分钟内积极回复评论', '置顶评论引导互动']
+      };
+    }
+
+    function renderGenerateResult(result) {
+      const badge = document.getElementById('generateComplianceBadge');
+      badge.className = `px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${result.compliance.level === 'low' ? 'risk-low' : result.compliance.level === 'medium' ? 'risk-medium' : 'risk-high'}`;
+      badge.innerHTML = `<i data-lucide="${result.compliance.level === 'low' ? 'shield-check' : 'alert-triangle'}" class="w-3.5 h-3.5"></i><span>${result.compliance.level === 'low' ? '合规检测通过' : '存在合规风险'}</span>`;
+
+      document.getElementById('g-titles').innerHTML = result.titles.map((t, i) => `
+        <div class="title-option border-2 border-gray-100 rounded-xl p-4 cursor-pointer ${i===0?'selected':''}" onclick="selectTitle(this)">
+          <div class="flex items-start gap-3">
+            <div class="w-6 h-6 rounded-full bg-red-50 flex items-center justify-center text-xs font-bold flex-shrink-0" style="color:var(--xhs-red)">${i+1}</div>
+            <div class="flex-1">
+              <p class="text-sm font-medium">${t}</p>
+              <button onclick="event.stopPropagation(); copyText('${t.replace(/'/g, "\\'")}')" class="text-xs mt-2 flex items-center gap-1" style="color:var(--xhs-red)"><i data-lucide="copy" class="w-3 h-3"></i>复制</button>
+            </div>
+          </div>
+        </div>`).join('');
+      document.getElementById('g-bodyText').textContent = result.body;
+      document.getElementById('g-tagsList').innerHTML = result.tags.map(t => `<span class="tag-chip px-3 py-1 rounded-full text-sm font-medium">${t}</span>`).join('');
+      document.getElementById('g-coverText').textContent = result.cover;
+      document.getElementById('g-coverDesign').innerHTML = result.coverDesign.map(d => `<div class="flex gap-2"><span class="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0" style="background-color:var(--xhs-red)"></span><p class="text-sm">${d}</p></div>`).join('');
+      document.getElementById('g-imageCount').textContent = `共 ${result.images.length} 张`;
+      document.getElementById('g-imageScript').innerHTML = result.images.map((img, i) => `
+        <div class="border border-gray-100 rounded-xl p-3">
+          <div class="flex items-center gap-2 mb-1"><span class="w-6 h-6 rounded-full bg-red-50 flex items-center justify-center text-xs font-bold" style="color:var(--xhs-red)">${i+1}</span><span class="font-medium text-sm">${img.content}</span></div>
+          <p class="text-xs text-gray-600"><span class="font-medium">拍摄：</span>${img.desc}</p>
+          <p class="text-xs" style="color:var(--xhs-red)"><span class="font-medium">配文：</span>${img.text}</p>
+        </div>`).join('');
+      document.getElementById('g-complianceDetail').innerHTML = `
+        <div class="p-3 rounded-xl ${result.compliance.level==='low'?'bg-green-50 text-green-800':result.compliance.level==='medium'?'bg-yellow-50 text-yellow-800':'bg-red-50 text-red-800'}">
+          <div class="font-medium mb-1">风险等级：${result.compliance.level==='low'?'低风险':result.compliance.level==='medium'?'中风险':'高风险'}</div>
+          <div class="text-sm">问题：${result.compliance.issues.join('；')}</div>
+          <div class="text-sm mt-1">建议：${result.compliance.suggestions.join('；')}</div>
+        </div>`;
+      document.getElementById('g-publishSuggestions').innerHTML = result.publishSuggestions.map(s => `<div class="flex gap-2"><span class="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0" style="background-color:var(--xhs-red)"></span><p class="text-sm">${s}</p></div>`).join('');
+      lucide.createIcons();
+    }
+
+    function selectTitle(el) { document.querySelectorAll('.title-option').forEach(e => e.classList.remove('selected')); el.classList.add('selected'); }
+    function copyElement(id) { navigator.clipboard.writeText(document.getElementById(id).textContent).then(() => showToast('已复制')); }
+    function copyText(text) { navigator.clipboard.writeText(text).then(() => showToast('已复制')); }
+    function copyTags() { if (!currentResult) return; navigator.clipboard.writeText(currentResult.tags.join(' ')).then(() => showToast('标签已复制')); }
+    function copyAll() { if (!currentResult) return; const title = document.querySelector('.title-option.selected p')?.textContent || currentResult.titles[0]; const text = `标题：${title}\n\n正文：\n${currentResult.body}\n\n标签：\n${currentResult.tags.join(' ')}\n\n封面：\n${currentResult.cover}`; navigator.clipboard.writeText(text).then(() => showToast('全部内容已复制')); }
+    function saveResult() { if (!currentResult) return; const h = JSON.parse(localStorage.getItem('xhs_history') || '[]'); h.unshift({ ...currentResult, savedAt: new Date().toISOString(), id: Date.now() }); localStorage.setItem('xhs_history', JSON.stringify(h.slice(0, 50))); showToast('已保存到历史记录'); renderHistory(); }
+    function importToPlugin() { showToast('浏览器插件开发中'); }
+    function regenerate() { document.getElementById('generateForm').dispatchEvent(new Event('submit')); }
+    function aiGenerateImage() { document.getElementById('imageModal').classList.remove('hidden'); document.getElementById('imageGenLoading').classList.remove('hidden'); document.getElementById('imageGenResult').classList.add('hidden'); lucide.createIcons(); setTimeout(() => { document.getElementById('imageGenLoading').classList.add('hidden'); document.getElementById('imageGenResult').classList.remove('hidden'); lucide.createIcons(); }, 2000); }
+    function closeImageModal() { document.getElementById('imageModal').classList.add('hidden'); }
+    function analyzeReference() { showToast('对标分析完成，已填充生成参数'); document.getElementById('topic').value = '油皮夏季护肤（对标风格）'; }
+
+    function showToast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.remove('opacity-0'); setTimeout(() => t.classList.add('opacity-0'), 2000); }
+
+    // Batch generate
+    function batchGenerate() {
+      const topics = document.getElementById('batchTopics').value.trim().split('\n').filter(t => t);
+      if (!topics.length) { showToast('请输入至少一个主题'); return; }
+      const container = document.getElementById('batchResults');
+      container.innerHTML = '<div class="col-span-full text-center py-8"><div class="skeleton h-8 w-32 mx-auto mb-4"></div><p class="text-gray-500">批量生成中...</p></div>';
+      setTimeout(() => {
+        container.innerHTML = topics.map((topic, i) => {
+          const r = generateResult(topic, document.getElementById('batchAudience').value, document.getElementById('batchType').value);
+          return `<div class="bg-white rounded-2xl shadow-sm p-5"><div class="flex justify-between items-start mb-3"><h4 class="font-bold text-sm">${r.titles[0]}</h4><span class="text-xs px-2 py-1 bg-gray-100 rounded">${r.type}</span></div><p class="text-xs text-gray-600 line-clamp-3 mb-3">${r.body}</p><div class="flex flex-wrap gap-1 mb-3">${r.tags.slice(0,3).map(t => `<span class="tag-chip px-2 py-0.5 rounded text-xs">${t}</span>`).join('')}</div><div class="flex gap-2"><button class="text-xs px-3 py-1.5 border border-gray-200 rounded-lg">复制</button><button class="text-xs px-3 py-1.5 border border-gray-200 rounded-lg">保存</button></div></div>`;
+        }).join('');
+        lucide.createIcons();
+      }, 1500);
+    }
+
+    // Templates
+    const templates = [
+      { name: '油皮夏季护肤指南', category: 'beauty', type: '干货收藏型', desc: '5步护肤流程，适合美妆博主' },
+      { name: '新手化妆误区', category: 'beauty', type: '争议讨论型', desc: '吐槽常见化妆错误' },
+      { name: '平价防晒推荐', category: 'beauty', type: '种草带货型', desc: '学生党防晒产品种草' },
+      { name: '一周通勤穿搭', category: 'fashion', type: '合集清单型', desc: '职场穿搭合集' },
+      { name: '探店美食打卡', category: 'food', type: '情绪共鸣型', desc: '本地生活美食分享' },
+      { name: '离职后的生活', category: 'career', type: '情绪共鸣型', desc: '职场转型故事' },
+      { name: '云南旅行攻略', category: 'travel', type: '干货收藏型', desc: '7天云南行程规划' },
+      { name: 'Python入门路线', category: 'knowledge', type: '干货收藏型', desc: '编程学习路径' },
+    ];
+    function renderTemplates(filter = 'all') {
+      const grid = document.getElementById('templatesGrid');
+      const filtered = filter === 'all' ? templates : templates.filter(t => t.category === filter);
+      grid.innerHTML = filtered.map(t => `<div class="bg-white rounded-2xl shadow-sm p-5 hover:shadow-md transition-shadow cursor-pointer" onclick="applyTemplate('${t.name}', '${t.type}')">
+        <div class="flex justify-between items-start mb-2"><span class="font-bold text-gray-900">${t.name}</span><span class="text-xs px-2 py-0.5 rounded-full bg-red-50" style="color:var(--xhs-red)">${t.type}</span></div>
+        <p class="text-sm text-gray-600 mb-3">${t.desc}</p>
+        <div class="text-xs text-gray-400">${t.category}</div>
+      </div>`).join('');
+    }
+    renderTemplates();
+    document.querySelectorAll('.template-filter').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.template-filter').forEach(b => { b.classList.remove('active', 'bg-red-50'); b.classList.add('bg-gray-100', 'text-gray-600'); b.style.cssText = ''; });
+        btn.classList.add('active', 'bg-red-50');
+        btn.classList.remove('bg-gray-100', 'text-gray-600');
+        btn.style.color = 'var(--xhs-red)';
+        renderTemplates(btn.dataset.filter);
+      });
+    });
+    function applyTemplate(name, type) {
+      document.getElementById('topic').value = name;
+      document.querySelectorAll('.type-card').forEach(c => c.classList.toggle('active', c.dataset.type === type));
+      selectedType = type;
+      document.querySelector('[data-page="generate"]').click();
+      showToast('已应用模板');
+    }
+
+    // History
+    function renderHistory() {
+      const list = document.getElementById('historyList');
+      const history = JSON.parse(localStorage.getItem('xhs_history') || '[]');
+      if (!history.length) { list.innerHTML = '<div class="bg-white rounded-2xl shadow-sm p-12 text-center text-gray-500">暂无历史记录</div>'; return; }
+      list.innerHTML = history.map(h => `<div class="bg-white rounded-2xl shadow-sm p-5">
+        <div class="flex justify-between items-start mb-2">
+          <div><h4 class="font-bold text-gray-900">${h.topic}</h4><p class="text-xs text-gray-500">${new Date(h.savedAt).toLocaleString()} · ${h.type}</p></div>
+          <span class="text-xs px-2 py-1 rounded-full ${h.compliance.level==='low'?'risk-low':h.compliance.level==='medium'?'risk-medium':'risk-high'}">${h.compliance.level==='low'?'低风险':h.compliance.level==='medium'?'中风险':'高风险'}</span>
+        </div>
+        <p class="text-sm text-gray-600 line-clamp-2 mb-3">${h.body}</p>
+        <div class="flex flex-wrap gap-1 mb-3">${h.tags.slice(0,4).map(t => `<span class="tag-chip px-2 py-0.5 rounded text-xs">${t}</span>`).join('')}</div>
+        <div class="flex gap-2"><button class="text-xs px-3 py-1.5 border border-gray-200 rounded-lg">查看</button><button class="text-xs px-3 py-1.5 border border-gray-200 rounded-lg">复制</button><button class="text-xs px-3 py-1.5 border border-gray-200 rounded-lg text-red-600">删除</button></div>
+      </div>`).join('');
+    }
+    renderHistory();
+
+    // Compliance check
+    function checkCompliance() {
+      const text = document.getElementById('complianceInput').value.trim();
+      if (!text) { showToast('请输入要检测的文案'); return; }
+      const container = document.getElementById('complianceResult');
+      container.innerHTML = '<div class="text-center py-8"><div class="skeleton h-8 w-32 mx-auto mb-4"></div><p class="text-gray-500">检测中...</p></div>';
+      setTimeout(() => {
+        const hasRisk = text.includes('最好') || text.includes('第一') || text.includes('微信');
+        container.innerHTML = `
+          <div class="p-4 rounded-xl ${hasRisk?'bg-yellow-50 text-yellow-800':'bg-green-50 text-green-800'} mb-4">
+            <div class="font-bold text-lg mb-1">${hasRisk?'中风险':'低风险'}</div>
+            <div class="text-sm">${hasRisk?'检测到潜在敏感词或导流信息':'未检测到明显违规内容'}</div>
+          </div>
+          <div class="space-y-3">
+            <div class="border-b border-gray-100 pb-3"><div class="text-sm font-medium text-gray-700">敏感词检测</div><div class="text-xs text-gray-500">${hasRisk?'发现 1-2 个风险点':'未命中'}</div></div>
+            <div class="border-b border-gray-100 pb-3"><div class="text-sm font-medium text-gray-700">广告声明</div><div class="text-xs text-gray-500">建议商业内容标注 #合作</div></div>
+            <div><div class="text-sm font-medium text-gray-700">修改建议</div><div class="text-xs text-gray-500">${hasRisk?'替换极限词，删除外部联系方式':'保持当前表述'}</div></div>
+          </div>
+        `;
+      }, 1000);
+    }
+
+    // Close modal on backdrop click
+    document.getElementById('imageModal').addEventListener('click', (e) => { if (e.target.id === 'imageModal') closeImageModal(); });
+  </script>
+</body>
+</html>
