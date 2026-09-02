@@ -1,0 +1,55 @@
+{
+  "manifest_version": 3,
+  "name": "小红书运营助手 - 一键发布",
+  "version": "1.0.0",
+  "description": "将小红书运营助手生成的内容半自动发布到小红书创作服务平台",
+  "permissions": [
+    "storage",
+    "cookies",
+    "activeTab",
+    "notifications",
+    "scripting",
+    "background"
+  ],
+  "host_permissions": [
+    "http://localhost:3000/*",
+    "http://localhost:8000/*",
+    "https://xhs-ops-agent.com/*",
+    "https://api.xhs-ops-agent.com/*",
+    "https://creator.xiaohongshu.com/*",
+    "https://www.xiaohongshu.com/*"
+  ],
+  "background": {
+    "service_worker": "assets/background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://creator.xiaohongshu.com/*"],
+      "js": ["assets/content.js"],
+      "css": ["assets/content.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "src/popup/index.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["assets/*", "icons/*"],
+      "matches": ["https://creator.xiaohongshu.com/*"]
+    }
+  ]
+}
