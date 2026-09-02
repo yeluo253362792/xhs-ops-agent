@@ -187,7 +187,7 @@ export default function Sidebar({ task, onClose, onMinimize }: SidebarProps) {
       </div>
 
       {/* Progress */}
-      <div className="px-4 py-3 border-b border-gray-100 flex-1 overflow-y-auto" style={{ maxHeight: '280px' }}>
+      <div className="xhs-sidebar-scroll px-4 py-3 border-b border-gray-100">
         <h4 className="text-sm font-semibold text-gray-700 mb-3">自动填充进度</h4>
         <div className="space-y-4">
           <FieldItem

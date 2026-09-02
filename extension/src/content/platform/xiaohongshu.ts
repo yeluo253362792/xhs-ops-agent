@@ -27,8 +27,18 @@ export async function detectPageType(): Promise<PageType> {
 
 export async function isLoggedIn(): Promise<boolean> {
   const pageType = await detectPageType()
-  if (pageType === 'login') return false
 
+  // 发布页和创作服务平台首页必须已登录才能访问
+  if (pageType === 'publish' || pageType === 'home') {
+    return true
+  }
+
+  // 明确检测到登录页二维码/表单才算未登录
+  if (pageType === 'login') {
+    return false
+  }
+
+  // unknown 时兜底：只要页面存在用户头像或昵称等登录标识，也视为已登录
   const selectors = await getSelectors()
   const loginIndicatorSelectors = selectors.selectors.loginIndicator || []
   for (const selector of loginIndicatorSelectors) {

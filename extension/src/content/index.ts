@@ -32,8 +32,22 @@ async function init(): Promise<void> {
 }
 
 async function tryMountSidebar(): Promise<void> {
-  const activeTaskId = await getStorageItem<string>(STORAGE_KEYS.ACTIVE_TASK_ID)
+  let activeTaskId = await getStorageItem<string>(STORAGE_KEYS.ACTIVE_TASK_ID)
   console.log('[XHS Content] active task:', activeTaskId)
+
+  // 没有 active task 时，自动使用最近一条待处理任务
+  if (!activeTaskId) {
+    const pendingTasks = (await getStorageItem<PublishTask[]>(STORAGE_KEYS.PENDING_TASKS)) || []
+    const availableTask = pendingTasks.find((t: PublishTask) =>
+      !['published', 'cancelled', 'failed', 'expired'].includes(t.status)
+    )
+
+    if (availableTask) {
+      activeTaskId = availableTask.id
+      await setStorageItem(STORAGE_KEYS.ACTIVE_TASK_ID, activeTaskId)
+      console.log('[XHS Content] 自动选中待处理任务:', activeTaskId)
+    }
+  }
 
   if (!activeTaskId) {
     console.log('[XHS Content] 没有 active task，不显示侧边栏')
@@ -109,6 +123,27 @@ async function handleMessage(message: { type: string; taskId?: string }): Promis
       return { success: false, error: 'Unknown message type' }
   }
 }
+
+// 兜底：监听 storage 变化。当 service worker 设置 ACTIVE_TASK_ID 后，
+// 即使 MOUNT_SIDEBAR 消息丢失或页面早已加载完成，也能主动挂载侧边栏。
+chrome.storage.onChanged.addListener((changes, areaName) => {
+  if (areaName !== 'local') return
+  if (!changes[STORAGE_KEYS.ACTIVE_TASK_ID]) return
+
+  const activeTaskId = changes[STORAGE_KEYS.ACTIVE_TASK_ID].newValue as string | null
+  console.log('[XHS Content] storage 变化，active task:', activeTaskId)
+
+  if (!activeTaskId) {
+    unmountSidebar()
+    return
+  }
+
+  detectPageType().then(pageType => {
+    if (pageType === 'publish') {
+      tryMountSidebar()
+    }
+  })
+})
 
 // 监听 SPA 路由变化
 window.addEventListener('popstate', handleUrlChange)
