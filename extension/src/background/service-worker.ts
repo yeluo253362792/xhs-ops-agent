@@ -164,13 +164,28 @@ export async function openPublishPage(taskId: string): Promise<void> {
   const url = 'https://creator.xiaohongshu.com/publish'
   const tabs = await chrome.tabs.query({ url: 'https://creator.xiaohongshu.com/*' })
 
+  let tabId: number | undefined
+
   if (tabs.length > 0 && tabs[0].id) {
-    await chrome.tabs.update(tabs[0].id, { url, active: true })
+    tabId = tabs[0].id
+    await chrome.tabs.update(tabId, { url, active: true })
     if (tabs[0].windowId) {
       await chrome.windows.update(tabs[0].windowId, { focused: true })
     }
   } else {
-    await chrome.tabs.create({ url })
+    const newTab = await chrome.tabs.create({ url })
+    tabId = newTab.id
+  }
+
+  // 等待页面加载完成后发送 MOUNT_SIDEBAR 消息
+  if (tabId) {
+    chrome.tabs.onUpdated.addListener(function listener(updatedTabId, info) {
+      if (updatedTabId === tabId && info.status === 'complete') {
+        chrome.tabs.onUpdated.removeListener(listener)
+        chrome.tabs.sendMessage(tabId!, { type: 'MOUNT_SIDEBAR', taskId })
+          .catch(err => console.log('[XHS SW] 发送 MOUNT_SIDEBAR 失败', err))
+      }
+    })
   }
 }
 

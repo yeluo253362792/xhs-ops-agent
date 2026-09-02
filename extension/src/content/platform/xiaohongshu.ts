@@ -6,6 +6,8 @@ export type PageType = 'login' | 'publish' | 'home' | 'unknown'
 
 export async function detectPageType(): Promise<PageType> {
   const url = window.location.href
+  console.log('[XHS Platform] 检测 URL:', url)
+
   if (url.includes('/publish')) return 'publish'
 
   const selectors = await getSelectors()
@@ -55,7 +57,10 @@ export function safeQuerySelectorAll(selector: string): Element[] {
 export function findElement(selectors: string[]): Element | null {
   for (const selector of selectors) {
     const el = safeQuerySelector(selector)
-    if (el) return el
+    if (el) {
+      console.log('[XHS Platform] 找到元素:', selector)
+      return el
+    }
   }
   return null
 }
@@ -81,6 +86,7 @@ export function waitForElement(
       }
 
       if (Date.now() - startTime >= timeoutMs) {
+        console.log('[XHS Platform] 等待元素超时:', selectors)
         resolve(null)
         return
       }
