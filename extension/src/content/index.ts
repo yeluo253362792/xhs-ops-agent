@@ -32,8 +32,22 @@ async function init(): Promise<void> {
 }
 
 async function tryMountSidebar(): Promise<void> {
-  const activeTaskId = await getStorageItem<string>(STORAGE_KEYS.ACTIVE_TASK_ID)
+  let activeTaskId = await getStorageItem<string>(STORAGE_KEYS.ACTIVE_TASK_ID)
   console.log('[XHS Content] active task:', activeTaskId)
+
+  // 没有 active task 时，自动使用最近一条待处理任务
+  if (!activeTaskId) {
+    const pendingTasks = (await getStorageItem<PublishTask[]>(STORAGE_KEYS.PENDING_TASKS)) || []
+    const availableTask = pendingTasks.find((t: PublishTask) =>
+      !['published', 'cancelled', 'failed', 'expired'].includes(t.status)
+    )
+
+    if (availableTask) {
+      activeTaskId = availableTask.id
+      await setStorageItem(STORAGE_KEYS.ACTIVE_TASK_ID, activeTaskId)
+      console.log('[XHS Content] 自动选中待处理任务:', activeTaskId)
+    }
+  }
 
   if (!activeTaskId) {
     console.log('[XHS Content] 没有 active task，不显示侧边栏')
