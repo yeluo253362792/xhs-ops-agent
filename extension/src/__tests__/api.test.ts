@@ -41,7 +41,7 @@ describe('api', () => {
       expect(result.tasks).toHaveLength(1)
       expect(result.tasks[0].id).toBe('task-1')
       expect(fetch).toHaveBeenCalledWith(
-        expect.stringContaining('/api/v1/publish-tasks/pending'),
+        expect.stringContaining('/publish-tasks/pending'),
         expect.objectContaining({
           method: 'GET',
           headers: expect.objectContaining({
@@ -83,7 +83,7 @@ describe('api', () => {
 
       expect(result.status).toBe('waiting_user')
       expect(fetch).toHaveBeenCalledWith(
-        expect.stringContaining('/api/v1/publish-tasks/task-1'),
+        expect.stringContaining('/publish-tasks/task-1'),
         expect.objectContaining({
           method: 'PATCH',
           body: JSON.stringify({

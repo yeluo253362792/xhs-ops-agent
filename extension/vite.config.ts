@@ -1,9 +1,23 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import { resolve } from 'path'
+import { resolve, dirname } from 'path'
+import { fileURLToPath } from 'url'
+import webExtension from 'vite-plugin-web-extension'
+
+const __dirname = dirname(fileURLToPath(import.meta.url))
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    webExtension({
+      manifest: resolve(__dirname, 'public/manifest.json'),
+      watchFilePaths: [
+        resolve(__dirname, 'public/manifest.json'),
+        resolve(__dirname, 'src/content/index.ts'),
+        resolve(__dirname, 'src/content/web-app.ts'),
+      ],
+    })
+  ],
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src')
@@ -12,29 +26,5 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     emptyOutDir: true,
-    rollupOptions: {
-      input: {
-        popup: resolve(__dirname, 'src/popup/index.html'),
-        background: resolve(__dirname, 'src/background/service-worker.ts'),
-        content: resolve(__dirname, 'src/content/index.ts'),
-        'web-app': resolve(__dirname, 'src/content/web-app.ts')
-      },
-      output: {
-        entryFileNames: (chunkInfo) => {
-          if (chunkInfo.name === 'background') return 'assets/background.js'
-          if (chunkInfo.name === 'content') return 'assets/content.js'
-          if (chunkInfo.name === 'web-app') return 'assets/web-app.js'
-          return 'assets/[name].js'
-        },
-        chunkFileNames: 'assets/[name].[hash].js',
-        assetFileNames: (assetInfo) => {
-          const info = assetInfo.name || ''
-          if (info.endsWith('popup/index.html')) return 'assets/popup.html'
-          if (info === 'content.css') return 'assets/content.css'
-          if (/\.css$/.test(info)) return 'assets/[name].[hash][extname]'
-          return 'assets/[name][extname]'
-        }
-      }
-    }
   }
 })

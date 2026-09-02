@@ -51,11 +51,11 @@ async function request<T>(
 }
 
 export async function fetchPendingTasks(token: string): Promise<{ tasks: PublishTask[] }> {
-  return request<{ tasks: PublishTask[] }>('GET', '/api/v1/publish-tasks/pending', token)
+  return request<{ tasks: PublishTask[] }>('GET', '/publish-tasks/pending', token)
 }
 
 export async function fetchTaskDetail(token: string, taskId: string): Promise<PublishTask> {
-  return request<PublishTask>('GET', `/api/v1/publish-tasks/${taskId}`, token)
+  return request<PublishTask>('GET', `/publish-tasks/${taskId}`, token)
 }
 
 export async function updateTaskStatus(
@@ -67,15 +67,15 @@ export async function updateTaskStatus(
     logs?: Array<{ time: string; level: string; message: string }>
   }
 ): Promise<PublishTask> {
-  return request<PublishTask>('PATCH', `/api/v1/publish-tasks/${taskId}`, token, payload)
+  return request<PublishTask>('PATCH', `/publish-tasks/${taskId}`, token, payload)
 }
 
 export async function cancelTask(token: string, taskId: string): Promise<PublishTask> {
-  return request<PublishTask>('POST', `/api/v1/publish-tasks/${taskId}/cancel`, token)
+  return request<PublishTask>('POST', `/publish-tasks/${taskId}/cancel`, token)
 }
 
 export async function fetchSelectors(token: string): Promise<SelectorConfig> {
-  return request<SelectorConfig>('GET', '/api/v1/extension/selectors', token)
+  return request<SelectorConfig>('GET', '/publish-tasks/extension/selectors', token)
 }
 
 export async function reportExtensionLog(
@@ -87,7 +87,7 @@ export async function reportExtensionLog(
     timestamp: string
   }
 ): Promise<{ received: boolean }> {
-  return request<{ received: boolean }>('POST', '/api/v1/extension/logs', token, payload)
+  return request<{ received: boolean }>('POST', '/publish-tasks/extension/logs', token, payload)
 }
 
 export async function getExtensionToken(accessToken: string): Promise<{
@@ -97,7 +97,7 @@ export async function getExtensionToken(accessToken: string): Promise<{
 }> {
   return request<{ publish_token: string; expires_in: number; expires_at: string }>(
     'POST',
-    '/api/v1/auth/extension-token',
+    '/auth/extension-token',
     accessToken,
     { device_info: 'Chrome Extension 1.0.0' }
   )
@@ -110,7 +110,7 @@ export async function refreshExtensionToken(publishToken: string): Promise<{
 }> {
   return request<{ publish_token: string; expires_in: number; expires_at: string }>(
     'POST',
-    '/api/v1/auth/extension-token/refresh',
+    '/auth/extension-token/refresh',
     publishToken
   )
 }

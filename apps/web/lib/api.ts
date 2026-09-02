@@ -33,6 +33,17 @@ function getHeaders(): Record<string, string> {
   return headers
 }
 
+/**
+ * 将 access_token 写入 Cookie，供浏览器扩展读取。
+ * 扩展通过 chrome.cookies API 读取，SameSite=Lax 即可被扩展识别。
+ */
+function setAccessTokenCookie(token: string): void {
+  if (typeof document === 'undefined') return
+  const maxAge = 60 * 60 * 24 * 7 // 7 天
+  const encoded = encodeURIComponent(token)
+  document.cookie = `access_token=${encoded}; path=/; max-age=${maxAge}; SameSite=Lax`
+}
+
 export async function login(email: string = "demo@example.com", password: string = "demo"): Promise<string> {
   const params = new URLSearchParams()
   params.set('username', email)
@@ -45,6 +56,7 @@ export async function login(email: string = "demo@example.com", password: string
   })
   const data = await handleResponse<{ access_token: string }>(res)
   authToken = data.access_token
+  setAccessTokenCookie(authToken)
   return authToken
 }
 

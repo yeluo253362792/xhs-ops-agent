@@ -14,20 +14,21 @@
   "host_permissions": [
     "http://localhost:3000/*",
     "http://localhost:8000/*",
+    "http://localhost:8001/*",
     "https://xhs-ops-agent.com/*",
     "https://api.xhs-ops-agent.com/*",
     "https://creator.xiaohongshu.com/*",
     "https://www.xiaohongshu.com/*"
   ],
   "background": {
-    "service_worker": "assets/background.js",
+    "service_worker": "src/background/service-worker.ts",
     "type": "module"
   },
   "content_scripts": [
     {
       "matches": ["https://creator.xiaohongshu.com/*"],
-      "js": ["assets/content.js"],
-      "css": ["assets/content.css"],
+      "js": ["src/content/index.ts"],
+      "css": ["src/content/sidebar/Sidebar.css"],
       "run_at": "document_idle"
     },
     {
@@ -35,7 +36,7 @@
         "http://localhost:3000/*",
         "https://xhs-ops-agent.com/*"
       ],
-      "js": ["assets/web-app.js"],
+      "js": ["src/content/web-app.ts"],
       "run_at": "document_start",
       "all_frames": false
     }
