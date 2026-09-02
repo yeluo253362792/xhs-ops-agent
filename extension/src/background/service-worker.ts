@@ -179,13 +179,28 @@ export async function openPublishPage(taskId: string): Promise<void> {
 
   // 等待页面加载完成后发送 MOUNT_SIDEBAR 消息
   if (tabId) {
-    chrome.tabs.onUpdated.addListener(function listener(updatedTabId, info) {
+    const sendMountSidebar = () => {
+      chrome.tabs.sendMessage(tabId!, { type: 'MOUNT_SIDEBAR', taskId })
+        .catch(err => console.log('[XHS SW] 发送 MOUNT_SIDEBAR 失败', err))
+    }
+
+    let fallbackTimer: ReturnType<typeof setTimeout> | null = null
+
+    const listener = (updatedTabId: number, info: chrome.tabs.TabChangeInfo) => {
       if (updatedTabId === tabId && info.status === 'complete') {
+        if (fallbackTimer) clearTimeout(fallbackTimer)
         chrome.tabs.onUpdated.removeListener(listener)
-        chrome.tabs.sendMessage(tabId!, { type: 'MOUNT_SIDEBAR', taskId })
-          .catch(err => console.log('[XHS SW] 发送 MOUNT_SIDEBAR 失败', err))
+        sendMountSidebar()
       }
-    })
+    }
+
+    chrome.tabs.onUpdated.addListener(listener)
+
+    // 兜底：即使 onUpdated complete 没触发（例如页面已在目标 URL），也尝试发送
+    fallbackTimer = setTimeout(() => {
+      chrome.tabs.onUpdated.removeListener(listener)
+      sendMountSidebar()
+    }, 2000)
   }
 }
 

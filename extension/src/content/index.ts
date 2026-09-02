@@ -110,6 +110,27 @@ async function handleMessage(message: { type: string; taskId?: string }): Promis
   }
 }
 
+// 兜底：监听 storage 变化。当 service worker 设置 ACTIVE_TASK_ID 后，
+// 即使 MOUNT_SIDEBAR 消息丢失或页面早已加载完成，也能主动挂载侧边栏。
+chrome.storage.onChanged.addListener((changes, areaName) => {
+  if (areaName !== 'local') return
+  if (!changes[STORAGE_KEYS.ACTIVE_TASK_ID]) return
+
+  const activeTaskId = changes[STORAGE_KEYS.ACTIVE_TASK_ID].newValue as string | null
+  console.log('[XHS Content] storage 变化，active task:', activeTaskId)
+
+  if (!activeTaskId) {
+    unmountSidebar()
+    return
+  }
+
+  detectPageType().then(pageType => {
+    if (pageType === 'publish') {
+      tryMountSidebar()
+    }
+  })
+})
+
 // 监听 SPA 路由变化
 window.addEventListener('popstate', handleUrlChange)
 window.addEventListener('hashchange', handleUrlChange)
