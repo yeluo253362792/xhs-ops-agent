@@ -1,5 +1,5 @@
 import type { FillResult, PublishTask, TaskLog } from '@/shared/types'
-import { getSelectors, waitForElement } from './platform/xiaohongshu'
+import { getSelectors, waitForElement, findElement } from './platform/xiaohongshu'
 
 export interface FillAllResult {
   success: boolean
@@ -32,7 +32,9 @@ export async function fillAll(task: PublishTask): Promise<FillAllResult> {
 
   // 3. 填充标签
   log('info', '开始填充标签')
-  const tagsResult = await fillTags(selectors.selectors.tagInput, task.content.tags)
+  const tagSelectors = selectors.selectors.tagInput || []
+  const tagTriggerSelectors = selectors.selectors.tagTrigger || []
+  const tagsResult = await fillTags(tagSelectors, tagTriggerSelectors, task.content.tags)
   results.push(tagsResult)
   log(tagsResult.status === 'success' ? 'info' : 'error', tagsResult.message || `标签${tagsResult.status === 'success' ? '成功' : '失败'}`)
 
@@ -51,23 +53,41 @@ export async function fillAll(task: PublishTask): Promise<FillAllResult> {
   return { success, results, logs }
 }
 
+function setNativeValue(el: HTMLInputElement | HTMLTextAreaElement, value: string): void {
+  const proto = el instanceof HTMLInputElement ? HTMLInputElement.prototype : HTMLTextAreaElement.prototype
+  const descriptor = Object.getOwnPropertyDescriptor(proto, 'value')
+  if (descriptor && descriptor.set) {
+    descriptor.set.call(el, value)
+  } else {
+    el.value = value
+  }
+}
+
+function dispatchInputEvents(el: Element): void {
+  el.dispatchEvent(new Event('input', { bubbles: true }))
+  el.dispatchEvent(new Event('change', { bubbles: true }))
+  el.dispatchEvent(new Event('blur', { bubbles: true }))
+}
+
 async function fillTitle(selectors: string[], title: string): Promise<FillResult> {
-  const el = await waitForElement(selectors, 3000)
+  const el = await waitForElement(selectors, 5000)
   if (!el) {
     return { field: 'title', status: 'failed', message: '未找到标题输入框' }
   }
 
   try {
-    const htmlEl = el as HTMLElement
     if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) {
       el.focus()
-      el.value = title
-      el.dispatchEvent(new Event('input', { bubbles: true }))
-      el.dispatchEvent(new Event('change', { bubbles: true }))
+      setNativeValue(el, title)
+      dispatchInputEvents(el)
       el.blur()
-    } else if (htmlEl.isContentEditable) {
-      htmlEl.textContent = title
+    } else if ((el as HTMLElement).isContentEditable) {
+      const htmlEl = el as HTMLElement
+      htmlEl.focus()
+      document.execCommand('selectAll', false)
+      document.execCommand('insertText', false, title)
       htmlEl.dispatchEvent(new InputEvent('input', { bubbles: true }))
+      htmlEl.blur()
     }
     return { field: 'title', status: 'success', message: '标题填充成功' }
   } catch (err) {
@@ -76,26 +96,26 @@ async function fillTitle(selectors: string[], title: string): Promise<FillResult
 }
 
 async function fillBody(selectors: string[], body: string): Promise<FillResult> {
-  const el = await waitForElement(selectors, 3000)
+  const el = await waitForElement(selectors, 5000)
   if (!el) {
     return { field: 'body', status: 'failed', message: '未找到正文输入框' }
   }
 
   try {
-    const htmlEl = el as HTMLElement
     if (el instanceof HTMLTextAreaElement) {
       el.focus()
-      el.value = body
-      el.dispatchEvent(new Event('input', { bubbles: true }))
-      el.dispatchEvent(new Event('change', { bubbles: true }))
+      setNativeValue(el, body)
+      dispatchInputEvents(el)
       el.blur()
-    } else if (htmlEl.isContentEditable) {
+    } else if ((el as HTMLElement).isContentEditable) {
+      const htmlEl = el as HTMLElement
       htmlEl.focus()
-      // 使用 execCommand 以兼容部分富文本编辑器
       document.execCommand('selectAll', false)
       document.execCommand('insertText', false, body)
       htmlEl.dispatchEvent(new InputEvent('input', { bubbles: true }))
       htmlEl.blur()
+    } else {
+      return { field: 'body', status: 'failed', message: '正文元素不支持填充' }
     }
     return { field: 'body', status: 'success', message: '正文填充成功' }
   } catch (err) {
@@ -103,31 +123,58 @@ async function fillBody(selectors: string[], body: string): Promise<FillResult> 
   }
 }
 
-async function fillTags(selectors: string[], tags: string[]): Promise<FillResult> {
-  const el = await waitForElement(selectors, 3000)
+function findButtonByText(text: string): HTMLElement | null {
+  const buttons = Array.from(document.querySelectorAll('button, a, div[role="button"]'))
+  return buttons.find(b => b.textContent?.includes(text)) as HTMLElement | null
+}
+
+async function fillTags(
+  selectors: string[],
+  triggerSelectors: string[],
+  tags: string[]
+): Promise<FillResult> {
+  let el = await waitForElement(selectors, 3000)
+
+  // 没找到输入框时，尝试点击话题/标签触发按钮，再重新查找
+  if (!el && triggerSelectors.length > 0) {
+    const trigger = findElement(triggerSelectors) || findButtonByText('话题') || findButtonByText('标签')
+    if (trigger) {
+      (trigger as HTMLElement).click()
+      await new Promise(resolve => setTimeout(resolve, 500))
+      el = await waitForElement(selectors, 3000)
+    }
+  }
+
   if (!el) {
     return { field: 'tags', status: 'failed', message: '未找到标签输入框' }
   }
 
   try {
-    const tagText = tags.map(t => (t.startsWith('#') ? t : `#${t}`)).join(' ')
-
     if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) {
-      el.focus()
-      el.value = tagText
-      el.dispatchEvent(new Event('input', { bubbles: true }))
-      el.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }))
-      el.dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter', bubbles: true }))
+      for (const tag of tags) {
+        const normalized = tag.startsWith('#') ? tag.slice(1) : tag
+        el.focus()
+        setNativeValue(el, normalized)
+        el.dispatchEvent(new Event('input', { bubbles: true }))
+
+        // 模拟回车创建标签
+        el.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', bubbles: true }))
+        el.dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter', code: 'Enter', bubbles: true }))
+        el.dispatchEvent(new KeyboardEvent('keypress', { key: 'Enter', code: 'Enter', bubbles: true }))
+
+        await new Promise(resolve => setTimeout(resolve, 200))
+        setNativeValue(el, '')
+      }
       el.blur()
     }
-    return { field: 'tags', status: 'success', message: '标签填充成功' }
+    return { field: 'tags', status: 'success', message: `标签填充成功：${tags.length} 个` }
   } catch (err) {
     return { field: 'tags', status: 'failed', message: `填充失败: ${err instanceof Error ? err.message : '未知错误'}` }
   }
 }
 
 async function uploadImages(selectors: string[], images: { url: string; filename: string }[]): Promise<FillResult> {
-  const el = await waitForElement(selectors, 3000)
+  const el = await waitForElement(selectors, 5000)
   if (!el) {
     return { field: 'images', status: 'failed', message: '未找到图片上传输入框' }
   }

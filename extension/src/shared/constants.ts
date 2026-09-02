@@ -40,18 +40,36 @@ export const PLATFORM_SELECTORS: SelectorConfig = {
       'input[placeholder*="标题"]',
       'textarea[placeholder*="标题"]',
       '[class*="title"] input',
-      '[data-testid="note-title-input"]'
+      '[data-testid="note-title-input"]',
+      '[class*="title"] [contenteditable="true"]'
     ],
     bodyTextarea: [
       'textarea[placeholder*="正文"]',
       'div[contenteditable="true"][placeholder*="正文"]',
-      '[class*="content"] textarea',
-      '[data-testid="note-content-input"]'
+      'div[contenteditable="true"][placeholder*="描述"]',
+      'div[contenteditable="true"][placeholder*="分享"]',
+      '[class*="editor"] [contenteditable="true"]',
+      '[class*="content"] [contenteditable="true"]',
+      '[class*="desc"] [contenteditable="true"]',
+      '[data-testid="note-content-input"]',
+      '.note-editor',
+      '.publish-editor',
+      'div[contenteditable="true"]'
     ],
     tagInput: [
       'input[placeholder*="标签"]',
       'input[placeholder*="话题"]',
+      'input[placeholder*="添加"]',
+      '[class*="tag"] input[type="text"]',
+      '[class*="topic"] input[type="text"]',
+      '[class*="tag-input"] input',
+      '[class*="topic-input"] input',
       '[data-testid="note-tag-input"]'
+    ],
+    tagTrigger: [
+      '[class*="topic"]',
+      '[class*="tag-add"]',
+      '[class*="add-topic"]'
     ],
     imageUpload: [
       'input[type="file"][accept*="image"]',
@@ -59,14 +77,16 @@ export const PLATFORM_SELECTORS: SelectorConfig = {
       '[class*="upload"] input[type="file"]'
     ],
     publishButton: [
-      'button:contains("发布")',
       '[data-testid="publish-button"]',
       '[class*="publish"] button'
     ],
     loginIndicator: [
       '.creator-home',
       '.publish-entry',
-      '[data-testid="user-avatar"]'
+      '[data-testid="user-avatar"]',
+      '.user-avatar',
+      '.avatar',
+      '.user-name'
     ],
     loginQrCode: [
       '.login-qrcode',
