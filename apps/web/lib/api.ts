@@ -93,3 +93,30 @@ export async function deleteHistory(id: string): Promise<void> {
   })
   await handleResponse(res)
 }
+
+// Publish task APIs
+export async function createPublishTask(request: import('./types').PublishTaskCreate): Promise<import('./types').PublishTask> {
+  const res = await fetch(`${API_BASE_URL}/publish-tasks`, {
+    method: 'POST',
+    headers: getHeaders(),
+    body: JSON.stringify(request),
+  })
+  return handleResponse(res)
+}
+
+export async function uploadTempImages(files: FileList): Promise<import('./types').ImageUploadResult[]> {
+  const formData = new FormData()
+  for (let i = 0; i < files.length; i++) {
+    formData.append('images', files[i])
+  }
+
+  const res = await fetch(`${API_BASE_URL}/publish-tasks/upload-images`, {
+    method: 'POST',
+    headers: {
+      Authorization: authToken ? `Bearer ${authToken}` : '',
+    },
+    body: formData,
+  })
+  const data = await handleResponse<{ uploaded: import('./types').ImageUploadResult[] }>(res)
+  return data.uploaded
+}

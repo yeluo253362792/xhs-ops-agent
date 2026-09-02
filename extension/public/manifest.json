@@ -29,6 +29,15 @@
       "js": ["assets/content.js"],
       "css": ["assets/content.css"],
       "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "http://localhost:3000/*",
+        "https://xhs-ops-agent.com/*"
+      ],
+      "js": ["assets/web-app.js"],
+      "run_at": "document_start",
+      "all_frames": false
     }
   ],
   "action": {
@@ -49,7 +58,7 @@
   "web_accessible_resources": [
     {
       "resources": ["assets/*", "icons/*"],
-      "matches": ["https://creator.xiaohongshu.com/*"]
+      "matches": ["https://creator.xiaohongshu.com/*", "http://localhost:3000/*", "https://xhs-ops-agent.com/*"]
     }
   ]
 }

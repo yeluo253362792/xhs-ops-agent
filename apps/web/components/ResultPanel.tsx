@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { GenerateResponse } from '@/lib/types'
 import ComplianceBadge from './ComplianceBadge'
+import PublishDrawer from './PublishDrawer'
 
 interface Props {
   result: GenerateResponse
@@ -25,6 +26,7 @@ function copyText(text: string) {
 export default function ResultPanel({ result }: Props) {
   const [activeTab, setActiveTab] = useState('titles')
   const [selectedTitle, setSelectedTitle] = useState(0)
+  const [drawerOpen, setDrawerOpen] = useState(false)
 
   if (!result.success || !result.data) {
     return (
@@ -217,6 +219,32 @@ export default function ResultPanel({ result }: Props) {
           </div>
         )}
       </div>
+
+      {/* 底部操作栏 */}
+      <div className="border-t border-gray-100 p-4 flex gap-3">
+        <button
+          onClick={() => {
+            const text = `标题：${data.titles[selectedTitle] || data.topic}\n\n${data.body}\n\n${data.tags.map(t => '#' + t).join(' ')}`
+            copyText(text)
+          }}
+          className="flex-1 py-2.5 border border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition"
+        >
+          复制全部
+        </button>
+        <button
+          onClick={() => setDrawerOpen(true)}
+          className="flex-1 py-2.5 bg-xhs-red text-white rounded-xl font-medium hover:bg-xhs-red-hover transition flex items-center justify-center gap-2"
+        >
+          <span>✨</span>
+          发布到小红书
+        </button>
+      </div>
+
+      <PublishDrawer
+        isOpen={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        result={result}
+      />
     </div>
   )
 }
