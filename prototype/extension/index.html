@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>小红书运营助手 - 扩展原型</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+    .xhs-red { color: #FF2442; }
+    .bg-xhs-red { background-color: #FF2442; }
+    .hover\:bg-xhs-red-dark:hover { background-color: #E02030; }
+    .border-xhs-red { border-color: #FF2442; }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen p-8">
+  <div class="max-w-7xl mx-auto">
+    <h1 class="text-2xl font-bold text-gray-900 mb-2">浏览器扩展 UI 原型</h1>
+    <p class="text-gray-500 mb-8">小红书运营助手 · 半自动发布扩展</p>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <!-- Popup 原型 -->
+      <div>
+        <h2 class="text-lg font-semibold text-gray-900 mb-4">1. Popup 任务中心</h2>
+        <div class="bg-white rounded-lg shadow-lg overflow-hidden" style="width: 360px;">
+          <!-- Header -->
+          <div class="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+            <div>
+              <h3 class="font-bold text-gray-900">小红书运营助手</h3>
+              <p class="text-xs text-gray-500">user@example.com</p>
+            </div>
+            <button class="text-gray-400 hover:text-gray-600">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            </button>
+          </div>
+
+          <!-- Pending Tasks -->
+          <div class="p-4">
+            <h4 class="text-sm font-semibold text-gray-700 mb-3">待处理（2）</h4>
+            
+            <div class="space-y-3">
+              <!-- Task 1 -->
+              <div class="border-l-4 border-xhs-red bg-red-50 rounded-r-lg p-3">
+                <div class="flex items-start justify-between">
+                  <div>
+                    <p class="font-medium text-gray-900 text-sm">油皮夏季护肤</p>
+                    <p class="text-xs text-gray-500 mt-1">图文笔记 · 刚刚</p>
+                  </div>
+                  <span class="flex h-2 w-2 relative">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-xhs-red"></span>
+                  </span>
+                </div>
+                <button class="mt-2 w-full bg-xhs-red text-white text-xs font-medium py-1.5 rounded hover:bg-xhs-red-dark transition">
+                  去发布
+                </button>
+              </div>
+
+              <!-- Task 2 -->
+              <div class="border-l-4 border-gray-300 bg-gray-50 rounded-r-lg p-3">
+                <div class="flex items-start justify-between">
+                  <div>
+                    <p class="font-medium text-gray-900 text-sm">早八通勤穿搭</p>
+                    <p class="text-xs text-gray-500 mt-1">图文笔记 · 15 分钟前</p>
+                  </div>
+                </div>
+                <button class="mt-2 w-full bg-white border border-gray-300 text-gray-700 text-xs font-medium py-1.5 rounded hover:bg-gray-50 transition">
+                  去发布
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent -->
+          <div class="px-4 py-3 border-t border-gray-100">
+            <h4 class="text-sm font-semibold text-gray-700 mb-3">最近 7 天</h4>
+            <div class="border-l-4 border-green-500 bg-green-50 rounded-r-lg p-3">
+              <div class="flex items-start justify-between">
+                <div>
+                  <p class="font-medium text-gray-900 text-sm">上海探店</p>
+                  <p class="text-xs text-gray-500 mt-1">已发布 · 昨天</p>
+                </div>
+              </div>
+              <div class="mt-2 flex gap-2">
+                <button class="flex-1 bg-white border border-gray-300 text-gray-700 text-xs font-medium py-1.5 rounded hover:bg-gray-50 transition">查看笔记</button>
+                <button class="flex-1 bg-white border border-gray-300 text-gray-700 text-xs font-medium py-1.5 rounded hover:bg-gray-50 transition">重新发布</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar 原型 -->
+      <div>
+        <h2 class="text-lg font-semibold text-gray-900 mb-4">2. 小红书页面内侧边栏</h2>
+        <div class="bg-white rounded-lg shadow-lg" style="width: 320px; min-height: 600px;">
+          <!-- Header -->
+          <div class="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+            <h3 class="font-bold text-gray-900">小红书运营助手</h3>
+            <div class="flex gap-2">
+              <button class="text-gray-400 hover:text-gray-600 text-lg leading-none">−</button>
+              <button class="text-gray-400 hover:text-gray-600 text-lg leading-none">×</button>
+            </div>
+          </div>
+
+          <!-- Account -->
+          <div class="px-4 py-3 bg-red-50">
+            <div class="flex items-center gap-2">
+              <div class="w-6 h-6 rounded-full bg-xhs-red text-white flex items-center justify-center text-xs">小</div>
+              <div>
+                <p class="text-xs text-gray-600">当前账号</p>
+                <p class="text-sm font-medium text-gray-900">小红薯 5ED3A1</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Task Info -->
+          <div class="px-4 py-3 border-b border-gray-100">
+            <p class="text-sm font-medium text-gray-900">当前任务：油皮夏季护肤</p>
+            <p class="text-xs text-orange-600 mt-1">状态：等待用户确认</p>
+          </div>
+
+          <!-- Progress -->
+          <div class="px-4 py-3 border-b border-gray-100">
+            <h4 class="text-sm font-semibold text-gray-700 mb-3">自动填充进度</h4>
+            
+            <div class="space-y-4">
+              <!-- Title success -->
+              <div>
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="text-green-500 text-sm">✅</span>
+                  <span class="text-sm font-medium text-gray-700">标题</span>
+                </div>
+                <p class="text-xs text-gray-600 pl-6">油皮夏季护肤 5 个急救技巧</p>
+                <button class="ml-6 mt-1 text-xs text-xhs-red hover:underline">复制</button>
+              </div>
+
+              <!-- Body success -->
+              <div>
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="text-green-500 text-sm">✅</span>
+                  <span class="text-sm font-medium text-gray-700">正文</span>
+                </div>
+                <p class="text-xs text-gray-600 pl-6">已填充，点击查看</p>
+                <button class="ml-6 mt-1 text-xs text-xhs-red hover:underline">复制全文</button>
+              </div>
+
+              <!-- Tags failed -->
+              <div>
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="text-red-500 text-sm">❌</span>
+                  <span class="text-sm font-medium text-gray-700">标签</span>
+                </div>
+                <p class="text-xs text-red-500 pl-6">原因：未找到标签输入框</p>
+                <p class="text-xs text-gray-600 pl-6 mt-1">#油皮护肤 #夏季护肤 #急救技巧</p>
+                <button class="ml-6 mt-1 text-xs text-xhs-red hover:underline">复制标签</button>
+              </div>
+
+              <!-- Images pending -->
+              <div>
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="text-yellow-500 text-sm">⏳</span>
+                  <span class="text-sm font-medium text-gray-700">图片</span>
+                </div>
+                <p class="text-xs text-gray-600 pl-6">正在上传 2/3...</p>
+                <div class="ml-6 mt-2 flex gap-1">
+                  <div class="w-10 h-10 bg-gray-200 rounded"></div>
+                  <div class="w-10 h-10 bg-gray-200 rounded"></div>
+                  <div class="w-10 h-10 bg-gray-100 rounded border-2 border-dashed border-gray-300"></div>
+                </div>
+                <button class="ml-6 mt-1 text-xs text-gray-500 hover:text-gray-700">取消上传</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Logs -->
+          <div class="px-4 py-3 border-b border-gray-100 flex-1">
+            <h4 class="text-sm font-semibold text-gray-700 mb-2">操作日志</h4>
+            <div class="text-xs text-gray-500 space-y-1 max-h-32 overflow-y-auto">
+              <p>10:05:23 标题填充成功</p>
+              <p>10:05:24 正文填充成功</p>
+              <p class="text-red-500">10:05:25 标签输入框未找到</p>
+              <p>10:05:26 开始上传图片</p>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="p-4 space-y-2">
+            <button class="w-full bg-xhs-red text-white text-sm font-medium py-2 rounded-lg hover:bg-xhs-red-dark transition">
+              重新一键填充
+            </button>
+            <button class="w-full bg-white border border-gray-300 text-gray-700 text-sm font-medium py-2 rounded-lg hover:bg-gray-50 transition">
+              我已手动完成，继续发布
+            </button>
+            <button class="w-full bg-white border border-gray-300 text-gray-500 text-sm font-medium py-2 rounded-lg hover:bg-gray-50 transition">
+              取消任务
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Web App 确认抽屉 -->
+      <div class="lg:col-span-2">
+        <h2 class="text-lg font-semibold text-gray-900 mb-4">3. Web App 发布确认抽屉</h2>
+        <div class="bg-white rounded-lg shadow-lg max-w-2xl mx-auto p-6">
+          <div class="flex items-center justify-between mb-6">
+            <h3 class="text-xl font-bold text-gray-900">发布到小红书</h3>
+            <button class="text-gray-400 hover:text-gray-600 text-2xl">×</button>
+          </div>
+
+          <div class="space-y-6">
+            <div>
+              <h4 class="text-sm font-semibold text-gray-700 mb-2">📋 发布内容预览</h4>
+              <div class="bg-gray-50 rounded-lg p-4 space-y-2">
+                <p class="text-sm"><span class="text-gray-500">标题：</span>油皮夏季护肤 5 个急救技巧</p>
+                <p class="text-sm"><span class="text-gray-500">类型：</span>图文笔记</p>
+                <p class="text-sm"><span class="text-gray-500">标签：</span>#油皮护肤 #夏季护肤 #急救技巧</p>
+              </div>
+            </div>
+
+            <div>
+              <h4 class="text-sm font-semibold text-gray-700 mb-2">🖼️ 配图（共 3 张）</h4>
+              <div class="flex gap-3">
+                <div class="w-20 h-20 bg-gray-200 rounded-lg flex items-center justify-center text-xs text-gray-500">封面</div>
+                <div class="w-20 h-20 bg-gray-200 rounded-lg flex items-center justify-center text-xs text-gray-500">图2</div>
+                <div class="w-20 h-20 bg-gray-200 rounded-lg flex items-center justify-center text-xs text-gray-500">图3</div>
+              </div>
+            </div>
+
+            <div class="bg-yellow-50 border border-yellow-100 rounded-lg p-4">
+              <h4 class="text-sm font-semibold text-yellow-800 mb-2">⚠️ 重要提示</h4>
+              <ul class="text-sm text-yellow-700 space-y-1">
+                <li>1. 请确保已安装浏览器扩展</li>
+                <li>2. 系统只负责预填内容，最终发布需您在小红书页面手动确认</li>
+                <li>3. 请遵守小红书社区规范</li>
+              </ul>
+            </div>
+
+            <div class="flex justify-end gap-3">
+              <button class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition">
+                取消
+              </button>
+              <button class="px-6 py-2 bg-xhs-red text-white rounded-lg hover:bg-xhs-red-dark transition">
+                确认创建任务
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
