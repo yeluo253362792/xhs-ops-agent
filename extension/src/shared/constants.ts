@@ -37,6 +37,8 @@ export const PLATFORM_SELECTORS: SelectorConfig = {
   updated_at: new Date().toISOString(),
   selectors: {
     titleInput: [
+      '.publish-page-content-base input.d-text',
+      '.edit-container input[type="text"]',
       'input[placeholder*="标题"]',
       'textarea[placeholder*="标题"]',
       '[class*="title"] input',
@@ -44,6 +46,8 @@ export const PLATFORM_SELECTORS: SelectorConfig = {
       '[class*="title"] [contenteditable="true"]'
     ],
     bodyTextarea: [
+      '.tiptap.ProseMirror',
+      '.editor-content [contenteditable="true"]',
       'textarea[placeholder*="正文"]',
       'div[contenteditable="true"][placeholder*="正文"]',
       'div[contenteditable="true"][placeholder*="描述"]',
